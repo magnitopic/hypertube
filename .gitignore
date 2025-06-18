@@ -1,0 +1,78 @@
+# Ignore node_modules for both frontend and backend
+node_modules/
+
+# Ignore log files
+*.log
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore environment variable files
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Ignore any .DS_Store files (macOS specific)
+.DS_Store
+
+# Ignore build and output directories
+dist/
+build/
+out/
+
+# Ignore cache directories
+.cache/
+.next/
+.tmp/
+
+# Ignore IDE and editor settings files
+.vscode/
+.idea/
+*.swp
+
+# Ignore coverage reports
+coverage/
+*.lcov
+
+# Ignore debug and test output
+*.pid
+*.seed
+*.pid.lock
+
+# Ignore dependency and service lock files
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+./frontend/package-lock.json
+
+# Ignore TypeScript build outputs
+*.tsbuildinfo
+
+# Logs
+/src/logs
+
+# modules folder
+node_modules
+
+# Ignore local project settings
+.project
+.settings/
+*.iml
+
+# Ignore custom frontend and backend build output if separated
+frontend/build/
+backend/build/
+
+# Ignore docker volumes:
+/data
+
+# Ignore .vite folder from frontend
+.vite/
+
+# Ignore build folder for frontend
+dist/
+uploads
+downloads

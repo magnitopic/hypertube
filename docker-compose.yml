@@ -1,0 +1,80 @@
+services:
+    postgresql:
+        container_name: postgresql
+        build:
+            context: ./Docker/PostgreSQL
+            dockerfile: Dockerfile
+        volumes:
+            - postgresql_volume:/var/lib/postgresql
+        networks:
+            - hypertube-network
+        environment:
+            POSTGRESQL_ROOT_PASSWORD: ${POSTGRESQL_ROOT_PASSWORD}
+            POSTGRESQL_USER: ${POSTGRESQL_USER}
+            POSTGRESQL_PASSWORD: ${POSTGRESQL_PASSWORD}
+            POSTGRESQL_DATABASE: ${POSTGRESQL_DATABASE}
+            TZ: ${TIMEZONE}
+        healthcheck:
+            test:
+                [
+                    "CMD-SHELL",
+                    "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        restart: on-failure
+        ports:
+            - "5432:5432"
+        expose:
+            - "5432"
+
+    backend:
+        container_name: backend
+        build:
+            context: ./Docker/Backend
+            dockerfile: Dockerfile
+        volumes:
+            - ./Backend:/backend
+            - ./uploads:/uploads
+            - ./downloads:/downloads
+        networks:
+            - hypertube-network
+        environment:
+            TZ: ${TIMEZONE}
+        depends_on:
+            postgresql:
+                condition: service_healthy
+        env_file: .env
+        ports:
+            - "3001:3001"
+        restart: on-failure
+
+    frontend:
+        container_name: frontend
+        build:
+            context: ./Docker/Frontend
+            dockerfile: Dockerfile
+        volumes:
+            - ./Frontend:/Frontend
+        networks:
+            - hypertube-network
+        environment:
+            TZ: ${TIMEZONE}
+        env_file: .env
+        ports:
+            - "3000:3000"
+        expose:
+            - "3000"
+        restart: on-failure
+
+volumes:
+    postgresql_volume:
+        driver: local
+        driver_opts:
+            type: "none"
+            o: "bind"
+            device: "${POSTGRESQL_VOLUME_PATH}"
+networks:
+    hypertube-network:
+        driver: bridge
