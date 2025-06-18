@@ -61,12 +61,11 @@ export async function sendResetPasswordEmail({
 }
 
 export async function sendEmail(email, subject, body) {
-    const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD } = process.env;
-
+    const { EMAIL_HOST, EMAIL_PORT, EMAIL_USER, EMAIL_PASSWORD, MAIL_FROM_ADDRESS, MAIL_FROM_NAME } = process.env;
     const transporter = nodemailer.createTransport({
         host: EMAIL_HOST,
         port: parseInt(EMAIL_PORT),
-        secure: true,
+        secure: parseInt(EMAIL_PORT) === 465, // true solo para 465 (SSL)
         auth: {
             user: EMAIL_USER,
             pass: EMAIL_PASSWORD,
@@ -74,10 +73,11 @@ export async function sendEmail(email, subject, body) {
     });
 
     const mail = {
-        from: EMAIL_USER,
+        from: `${MAIL_FROM_NAME} <${MAIL_FROM_ADDRESS}>`,
         to: email,
         subject: subject,
         text: body,
+        html: body.replace(/(https?:\/\/\S+)/g, '<a href="$1">$1</a>'), // Convierte links en clickables
     };
 
     const info = await transporter.sendMail(mail);
