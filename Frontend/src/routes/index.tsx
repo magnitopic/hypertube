@@ -48,7 +48,7 @@ const protectedRoutes = {
 		),
 	},
 	video: {
-		path: "watch",
+		path: "video/:id",
 		element: (
 			<ProtectedRoute>
 				<Video />

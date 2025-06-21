@@ -12,6 +12,7 @@ export default class MoviesRouter {
         // GET:
         router.get('/genres', MovieController.getGenres);
         router.get('/:id', MovieController.moviePage);
+        router.get('/stream/:id', MovieController.streamMovie);
         router.get('/library/:page?', LibraryController.library);
         router.get('/search/:page?', LibraryController.search);
 

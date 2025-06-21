@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const ThumbnailBox: React.FC = ({ movie }) => {
+const ThumbnailBox: React.FC<{ movie: any }> = ({ movie }) => {
+	const navigate = useNavigate();
 	const handleClick = () => {
-		console.log("Movie clicked:", movie.id);
+		navigate(`/video/${movie.id}`);
 	};
 
 	return (

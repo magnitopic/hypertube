@@ -124,6 +124,14 @@ export async function checkPasswordVulnerabilities(password) {
             return { success: false, message: StatusMessage.PWNED_PASSWORD };
     } catch (error) {
         console.error('ERROR:', error);
+        // control net error
+        if (
+            error.code === 'EAI_AGAIN' ||
+            error.code === 'ENOTFOUND' ||
+            error.message?.includes('fetch failed')
+        ) {
+            return { success: true };
+        }
         return {
             success: false,
             message: StatusMessage.ERROR_VALIDATING_PASSWORD,

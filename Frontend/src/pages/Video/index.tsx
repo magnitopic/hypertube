@@ -1,8 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Description from "./Description";
 import CommentBubble from "./CommentBubble";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
+
 const index: React.FC = () => {
+	const { id } = useParams<{ id: string }>();
 	const writers = ["Christopher Nolan", "Kai Bird", "Martin Sherwin"];
 	const stars = ["Cillian Murphy", "Emily Blunt", "Matt Damon"];
 
@@ -14,6 +18,17 @@ const index: React.FC = () => {
 			comment: "This is a great movie",
 		},
 	]);
+
+	const [videoUrl, setVideoUrl] = useState("");
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState("");
+
+	useEffect(() => {
+		if (!id) return;
+		const url = `${API_URL}/movies/stream/${id}`;
+		setVideoUrl(url);
+		setLoading(false);
+	}, [id]);
 
 	const handleNewComment = (e) => {
 		e.preventDefault();
@@ -32,12 +47,19 @@ const index: React.FC = () => {
 	return (
 		<main className="flex flex-1 justify-center items-center flex-col">
 			<section className="container max-w-4xl mx-auto pt-12 px-4 flex flex-col gap-6">
-				<video
-					className="w-full rounded-lg bg-black"
-					controls
-					autoPlay
-					src=""
-				></video>
+				{loading ? (
+					<p>Loading video...</p>
+				) : error ? (
+					<p className="text-red-500">{error}</p>
+				) : (
+					<video
+						className="w-full rounded-lg bg-black"
+						controls
+						autoPlay
+						src={videoUrl}
+						onError={() => setError("No se pudo cargar el video. Puede que el archivo esté corrupto, bloqueado o no disponible.")}
+					></video>
+				)}
 			</section>
 			<section className="container max-w-4xl mx-auto pt-4 px-4">
 				<Description writers={writers} stars={stars} />

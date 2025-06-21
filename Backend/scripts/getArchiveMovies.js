@@ -8,6 +8,11 @@ export async function getArchiveMovies(movieGenres) {
 
     const rawMovies = await fetchRawMovies(url);
 
+    if (!rawMovies || !Array.isArray(rawMovies)) {
+        console.warn('Could not get videos from archive.org');
+    return;
+}
+
     let count = 1;
     for (const rawMovie of rawMovies) {
         if (count > process.env.MOVIES_LIMIT) return;

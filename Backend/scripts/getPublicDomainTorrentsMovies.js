@@ -60,6 +60,12 @@ async function saveMoviesData(moviesURLs, movieGenres) {
     for (const movieURL of moviesURLs) {
         if (count > process.env.MOVIES_LIMIT) return;
         const scrapedMovieData = await scrapMovieData(movieURL);
+
+        if (!scrapedMovieData || !scrapedMovieData.title || !scrapedMovieData.torrent_url) {
+            console.warn('No data from movie:', scrapedMovieData, movieURL);
+            continue;
+        }
+
         const TMDBMovieData = await getMovieData(scrapedMovieData, movieGenres);
         if (!TMDBMovieData) continue;
 
