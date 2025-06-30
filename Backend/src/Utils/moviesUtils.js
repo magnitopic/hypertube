@@ -43,7 +43,8 @@ export async function getMovieData(rawMovie, movieGenres) {
             .map((director) => director.name);
 
         const writers = movieDetails.credits.crew
-            .filter((crew) => crew.job === 'Writing')
+            .filter((crew) => crew.job === 'Writing' || crew.job === 'Writer')
+            .slice(0, 5) // Limit to top 5 writers
             .map((writer) => writer.name);
 
         const stars = movieDetails.credits.cast

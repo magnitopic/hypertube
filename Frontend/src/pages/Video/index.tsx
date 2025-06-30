@@ -8,8 +8,6 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
 
 const index: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
-	const writers = ["Christopher Nolan", "Kai Bird", "Martin Sherwin"];
-	const stars = ["Cillian Murphy", "Emily Blunt", "Matt Damon"];
 
 	const [comments, setComments] = useState([
 		{

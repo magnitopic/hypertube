@@ -35,9 +35,7 @@ const Description: React.FC = ({ videoInfo }) => {
 				</div>
 				<div>
 					<div className="flex gap-4 flex-wrap items-center">
-						<label className="text-lg underline">
-							Director
-						</label>
+						<label className="text-lg underline">Director</label>
 						<p>
 							{videoInfo &&
 							videoInfo.directors &&
@@ -86,12 +84,12 @@ const Description: React.FC = ({ videoInfo }) => {
 							</div>
 						)}
 				</div>
-				<div>
-					<label className="text-lg underline">
-						Summary
-					</label>
-					<p>{videoInfo && videoInfo.description}</p>
-				</div>
+				{videoInfo && videoInfo.description && (
+					<div>
+						<label className="text-lg underline">Summary</label>
+						<p>{videoInfo && videoInfo.description}</p>
+					</div>
+				)}
 			</div>
 		</div>
 	);
