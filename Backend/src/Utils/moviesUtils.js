@@ -27,15 +27,28 @@ export async function getMovieData(rawMovie, movieGenres) {
     const TMDBSearchURL = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${rawMovie.title}${year}`;
     try {
         const tmdbResponse = await axios.get(TMDBSearchURL);
-
         const movieData = tmdbResponse.data.results[0];
         if (!movieData) return null;
-        if (!movieData.poster_path) return null;
-        const thumbnail = `https://image.tmdb.org/t/p/w185${movieData.poster_path}`;
+
+        const movieDetailsURL = `https://api.themoviedb.org/3/movie/${movieData.id}?api_key=${TMDB_API_KEY}&append_to_response=credits`;
+        const movieDetailsResponse = await axios.get(movieDetailsURL);
+        const movieDetails = movieDetailsResponse.data;
 
         const genres = movieData.genre_ids.map(
             (genre_id) => movieGenres[genre_id] || 'Unknown'
         );
+
+        const directors = movieDetails.credits.crew
+            .filter((crew) => crew.job === 'Director')
+            .map((director) => director.name);
+
+        const writers = movieDetails.credits.crew
+            .filter((crew) => crew.job === 'Writing')
+            .map((writer) => writer.name);
+
+        const stars = movieDetails.credits.cast
+            .slice(0, 5) // Limit to top 5 stars
+            .map((star) => star.name);
 
         const movie = {
             tmdb_id: movieData.id,
@@ -46,7 +59,11 @@ export async function getMovieData(rawMovie, movieGenres) {
             genres: genres,
             description: movieData.overview || 'N/A',
             rating: movieData.vote_average || 0,
-            thumbnail: thumbnail || 'N/A',
+            runtime: movieDetails.runtime || 0,
+            directors: directors,
+            writers: writers,
+            stars: stars,
+            thumbnail: `https://image.tmdb.org/t/p/w185${movieData.poster_path}`,
             language: movieData.original_language,
             popularity: movieData.popularity,
             torrent_url: rawMovie.identifier
