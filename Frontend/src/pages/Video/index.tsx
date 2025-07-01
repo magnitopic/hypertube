@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Description from "./Description";
 import CommentBubble from "./CommentBubble";
+import { useVideo } from "../../hooks/PageData/useVideo";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
 
 const index: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
-	const writers = ["Christopher Nolan", "Kai Bird", "Martin Sherwin"];
-	const stars = ["Cillian Murphy", "Emily Blunt", "Matt Damon"];
 
 	const [comments, setComments] = useState([
 		{
@@ -19,6 +18,8 @@ const index: React.FC = () => {
 		},
 	]);
 
+	const { getVideoInfo } = useVideo();
+	const [videoInfo, setVideoInfo] = useState(null);
 	const [videoUrl, setVideoUrl] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
@@ -43,6 +44,21 @@ const index: React.FC = () => {
 		const url = `${API_URL}/movies/stream/${id}`;
 		setVideoUrl(url);
 		setLoading(false);
+	}, [id]);
+
+	useEffect(() => {
+		if (!id) return;
+		const fetchVideoInfo = async () => {
+			try {
+				const videoInfo = await getVideoInfo(id);
+				setVideoInfo(videoInfo);
+			} catch (err) {
+				console.error("Error fetching video info:", err);
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetchVideoInfo();
 	}, [id]);
 
 	const handleNewComment = (e) => {
@@ -74,7 +90,7 @@ const index: React.FC = () => {
 				)}
 			</section>
 			<section className="container max-w-4xl mx-auto pt-4 px-4">
-				<Description writers={writers} stars={stars} />
+				<Description videoInfo={videoInfo} />
 			</section>
 			<section className="container max-w-4xl mx-auto pt-12 px-4 flex flex-col gap-6">
 				<div className="flex flex-col gap-4 w-full bg-background-secondary p-4 mb-8 rounded-lg">
