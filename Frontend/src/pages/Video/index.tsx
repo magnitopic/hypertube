@@ -23,6 +23,21 @@ const index: React.FC = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 
+	const getMimeType = (url: string): string => {
+		const ext = url.split(".").pop()?.toLowerCase();
+		switch (ext) {
+		  case "mp4":
+			return "video/mp4";
+		  case "webm":
+			return "video/webm";
+		  case "ogg":
+		  case "ogv":
+			return "video/ogg";
+		  default:
+			return "video/mp4";
+		}
+	};
+
 	useEffect(() => {
 		if (!id) return;
 		const url = `${API_URL}/movies/stream/${id}`;
@@ -52,13 +67,10 @@ const index: React.FC = () => {
 				) : error ? (
 					<p className="text-red-500">{error}</p>
 				) : (
-					<video
-						className="w-full rounded-lg bg-black"
-						controls
-						autoPlay
-						src={videoUrl}
-						onError={() => setError("No se pudo cargar el video. Puede que el archivo esté corrupto, bloqueado o no disponible.")}
-					></video>
+					<video className="w-full rounded-lg bg-black" controls autoPlay>
+						<source src={videoUrl} type={getMimeType(videoUrl)} />
+						HTML5 video not supported.
+					</video>
 				)}
 			</section>
 			<section className="container max-w-4xl mx-auto pt-4 px-4">
