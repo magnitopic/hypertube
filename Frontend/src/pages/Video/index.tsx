@@ -21,6 +21,12 @@ const index: React.FC = () => {
 	const { getVideoInfo } = useVideo();
 	const [videoInfo, setVideoInfo] = useState(null);
 	const [videoUrl, setVideoUrl] = useState("");
+	type SubtitleTrack = {
+		url: string;
+		lang: string;
+		label: string;
+	};
+	const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrack[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 
@@ -46,6 +52,7 @@ const index: React.FC = () => {
 		setLoading(false);
 	}, [id]);
 
+	// video
 	useEffect(() => {
 		if (!id) return;
 		const fetchVideoInfo = async () => {
@@ -59,6 +66,28 @@ const index: React.FC = () => {
 			}
 		};
 		fetchVideoInfo();
+	}, [id]);
+
+	// subtitles 
+	useEffect(() => {
+		if (!id) return;
+
+		const fetchSubtitles = async () => {
+			try {
+				const res = await fetch(`${API_URL}/movies/${id}/subtitles`, { credentials: "include" });
+				const data = await res.json();
+				if (data && Array.isArray(data.subtitles)) {
+					setSubtitleTracks(data.subtitles);
+				} else {
+					setSubtitleTracks([]);
+				}
+			} catch (err) {
+				console.error("Error fetching subtitles:", err);
+				setSubtitleTracks([]);
+			}
+		};
+
+		fetchSubtitles();
 	}, [id]);
 
 	const handleNewComment = (e) => {
@@ -85,6 +114,19 @@ const index: React.FC = () => {
 				) : (
 					<video className="w-full rounded-lg bg-black" controls autoPlay>
 						<source src={videoUrl} type={getMimeType(videoUrl)} />
+						{subtitleTracks.length === 0 && (
+						<track kind="subtitles" label="No subtitles" />
+						)}
+						{subtitleTracks.map((sub) => (
+							<track
+								key={sub.lang}
+								kind="subtitles"
+								src={`${API_URL}${sub.url}`}
+								srcLang={sub.lang}
+								label={sub.label}
+								default={sub.lang === "en"}
+							/>
+						))}
 						HTML5 video not supported.
 					</video>
 				)}

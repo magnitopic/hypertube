@@ -3,6 +3,8 @@ import express, { json } from 'express';
 import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
+import path from 'path';
+import fs from 'fs';
 
 // Local Imports:
 import SocketHandler from '../Sockets/SocketHandler.js'; // TODO: Remove if not used by the end of the project
@@ -62,6 +64,21 @@ export default class App {
         this.app.use(checkAuthStatusMiddleware(this.IGNORED_ROUTES));
         this.app.use(invalidJSONMiddleware());
         this.app.use(captureResponseDataMiddleware);
+
+        // TODO
+        const MOVIES_PATH = process.env.MOVIES_PATH || './downloads/movies';
+        this.app.use('/movies/:id/subs', (req, res, next) => {
+            if (!req.session || !req.session.user) {
+                return res.status(401).json({ msg: 'Unauthorized' });
+            }
+            const file = req.path.replace(/^\//, '');
+            const absPath = path.join(MOVIES_PATH, req.params.id, 'subs', file);
+            if (!fs.existsSync(absPath)) {
+                return res.status(404).send('Subtitle not found');
+            }
+            res.sendFile(absPath);
+        });
+        this.app.use('/movies', express.static(path.resolve(MOVIES_PATH)));
     }
 
     #setupRoutes() {
