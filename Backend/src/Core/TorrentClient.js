@@ -164,9 +164,9 @@ export default class TorrentClient {
       response.data.on('data', (chunk) => {
         this._downloadedBytes += chunk.length;
         this._downloadEmitter.emit('progress', this._downloadedBytes + offset);
-        if ((this._downloadedBytes + offset) % 1048576 < chunk.length) {
+        /* if ((this._downloadedBytes + offset) % 1048576 < chunk.length) { TODO: download logs
           console.log(`[TC] Downloaded ${this._downloadedBytes + offset} bytes...`);
-        }
+        } */
       });
       response.data.pipe(writer);
       writer.on('finish', () => {

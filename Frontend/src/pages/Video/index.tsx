@@ -27,21 +27,24 @@ const index: React.FC = () => {
 		label: string;
 	};
 	const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrack[]>([]);
+	const [loadingSubtitles, setLoadingSubtitles] = useState(true);
+	const [subtitleError, setSubtitleError] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
+	const [activeSubtitle, setActiveSubtitle] = useState<string | null>(null);
 
 	const getMimeType = (url: string): string => {
 		const ext = url.split(".").pop()?.toLowerCase();
 		switch (ext) {
-		  case "mp4":
-			return "video/mp4";
-		  case "webm":
-			return "video/webm";
-		  case "ogg":
-		  case "ogv":
-			return "video/ogg";
-		  default:
-			return "video/mp4";
+			case "mp4":
+				return "video/mp4";
+			case "webm":
+				return "video/webm";
+			case "ogg":
+			case "ogv":
+				return "video/ogg";
+			default:
+				return "video/mp4";
 		}
 	};
 
@@ -52,7 +55,7 @@ const index: React.FC = () => {
 		setLoading(false);
 	}, [id]);
 
-	// video
+	// video info
 	useEffect(() => {
 		if (!id) return;
 		const fetchVideoInfo = async () => {
@@ -61,6 +64,7 @@ const index: React.FC = () => {
 				setVideoInfo(videoInfo);
 			} catch (err) {
 				console.error("Error fetching video info:", err);
+				setError("Failed to load video information");
 			} finally {
 				setLoading(false);
 			}
@@ -73,22 +77,46 @@ const index: React.FC = () => {
 		if (!id) return;
 
 		const fetchSubtitles = async () => {
+			setLoadingSubtitles(true);
+			setSubtitleError("");
 			try {
-				const res = await fetch(`${API_URL}/movies/${id}/subtitles`, { credentials: "include" });
+				const res = await fetch(`${API_URL}/movies/${id}/subtitles`, { 
+					credentials: "include",
+					headers: {
+						'Accept': 'application/json'
+					}
+				});
+				if (!res.ok) {
+					throw new Error(`HTTP error! status: ${res.status}`);
+				}
 				const data = await res.json();
 				if (data && Array.isArray(data.subtitles)) {
 					setSubtitleTracks(data.subtitles);
+					// Set English as default if available
+					const enSub = data.subtitles.find(sub => sub.lang === 'en');
+					if (enSub) {
+						setActiveSubtitle(enSub.lang);
+					}
 				} else {
 					setSubtitleTracks([]);
+					setSubtitleError("No subtitles available");
 				}
 			} catch (err) {
 				console.error("Error fetching subtitles:", err);
+				setSubtitleError("Failed to load subtitles");
 				setSubtitleTracks([]);
+			} finally {
+				setLoadingSubtitles(false);
 			}
 		};
 
 		fetchSubtitles();
 	}, [id]);
+
+	const handleSubtitleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+		const value = event.target.value;
+		setActiveSubtitle(value === 'none' ? null : value);
+	};
 
 	const handleNewComment = (e) => {
 		e.preventDefault();
@@ -112,23 +140,51 @@ const index: React.FC = () => {
 				) : error ? (
 					<p className="text-red-500">{error}</p>
 				) : (
-					<video className="w-full rounded-lg bg-black" controls autoPlay>
-						<source src={videoUrl} type={getMimeType(videoUrl)} />
-						{subtitleTracks.length === 0 && (
-						<track kind="subtitles" label="No subtitles" />
+					<div className="flex flex-col gap-4">
+						<video className="w-full rounded-lg bg-black" controls autoPlay>
+							<source src={videoUrl} type={getMimeType(videoUrl)} />
+							{loadingSubtitles ? (
+								<track kind="subtitles" label="Loading subtitles..." />
+							) : subtitleTracks.length === 0 ? (
+								<track kind="subtitles" label="No subtitles available" />
+							) : (
+								subtitleTracks.map((sub) => (
+									<track
+										key={sub.lang}
+										kind="subtitles"
+										src={`${API_URL}${sub.url}`}
+										srcLang={sub.lang}
+										label={sub.label}
+										default={sub.lang === activeSubtitle}
+									/>
+								))
+							)}
+							Your browser does not support HTML5 video.
+						</video>
+						{!loadingSubtitles && subtitleTracks.length > 0 && (
+							<div className="flex items-center gap-2">
+								<label htmlFor="subtitles" className="text-sm font-medium">
+									Subtitles:
+								</label>
+								<select
+									id="subtitles"
+									value={activeSubtitle || 'none'}
+									onChange={handleSubtitleChange}
+									className="p-2 rounded bg-background-secondary text-sm"
+								>
+									<option value="none">None</option>
+									{subtitleTracks.map(sub => (
+										<option key={sub.lang} value={sub.lang}>
+											{sub.label}
+										</option>
+									))}
+								</select>
+							</div>
 						)}
-						{subtitleTracks.map((sub) => (
-							<track
-								key={sub.lang}
-								kind="subtitles"
-								src={`${API_URL}${sub.url}`}
-								srcLang={sub.lang}
-								label={sub.label}
-								default={sub.lang === "en"}
-							/>
-						))}
-						HTML5 video not supported.
-					</video>
+						{subtitleError && (
+							<p className="text-red-500 text-sm">{subtitleError}</p>
+						)}
+					</div>
 				)}
 			</section>
 			<section className="container max-w-4xl mx-auto pt-4 px-4">

@@ -1,5 +1,6 @@
 import mime from 'mime-types';
 import ffmpeg from 'fluent-ffmpeg';
+import ffmpegPath from 'ffmpeg-static';
 import fs from 'fs';
 import path from 'path';
 import StatusMessage from '../Utils/StatusMessage.js';
@@ -7,6 +8,14 @@ import moviesModel from '../Models/MoviesModel.js';
 import likedMoviesModel from '../Models/LikedMoviesModel.js';
 import { getMovieGenres } from '../Utils/moviesUtils.js';
 import TorrentClient from '../Core/TorrentClient.js';
+
+// fluent-ffmpeg
+if (ffmpegPath) {
+  ffmpeg.setFfmpegPath(ffmpegPath);
+  console.log('[FFMPEG] Using bundled ffmpeg-static:', ffmpegPath);
+} else {
+  console.error('[FFMPEG] ffmpeg-static not found. Subtitle/video conversion will fail.');
+}
 
 export default class MovieController {
   static async moviePage(req, res) {
@@ -135,7 +144,7 @@ export default class MovieController {
         }
 
         // Wait until the mp4 local file has enough bytes to serve this chunk
-        //await waitForLocalFile(mp4LocalPath, safeEnd + 1, 10000);
+        //await waitForLocalFile(mp4LocalPath, safeEnd + 1, 10000); TODO: delete?
 
         // Stream from mp4 local file
         const stream = fs.createReadStream(mp4LocalPath, { start, end: safeEnd });
@@ -158,6 +167,41 @@ export default class MovieController {
       console.error('Streaming error:', error.message);
       return res.status(500).send('Error streaming video');
     }
+  }
+
+  // Helper method to convert subtitle file to VTT
+  static async convertToVtt(sourcePath, targetPath) {
+    return new Promise((resolve, reject) => {
+      console.log(`[SUB] Starting conversion ${sourcePath} -> ${targetPath}`);
+      ffmpeg(sourcePath)
+        .toFormat('webvtt')
+        .on('start', (commandLine) => {
+          console.log('[FFmpeg] Subtitle conversion command:', commandLine);
+        })
+        .on('progress', (progress) => {
+          console.log('[FFmpeg] Subtitle conversion progress:', progress);
+        })
+        .on('end', async () => {
+          try {
+            let vttContent = fs.readFileSync(targetPath, 'utf8');
+            if (!vttContent.startsWith('WEBVTT')) {
+              console.log('[SUB] Adding WEBVTT header');
+              vttContent = 'WEBVTT\n\n' + vttContent;
+              fs.writeFileSync(targetPath, vttContent, 'utf8');
+            }
+            console.log(`[SUB] Successfully converted ${sourcePath} -> ${targetPath}`);
+            resolve();
+          } catch (err) {
+            console.error('[SUB] Failed to validate VTT:', err.message);
+            reject(err);
+          }
+        })
+        .on('error', (err) => {
+          console.error(`[FFMPEG Sub Error] (${sourcePath} -> ${targetPath}):`, err.message);
+          reject(err);
+        })
+        .save(targetPath);
+    });
   }
 
   static async getSubtitles(torrent, baseUrl, movieId, client) {
@@ -193,78 +237,87 @@ export default class MovieController {
         fs.mkdirSync(subDir, { recursive: true });
       }
 
+      let needDownload = false;
       if (!fs.existsSync(subPath)) {
+        needDownload = true;
+        console.log(`[SUB] .srt not found, will download: ${subPath}`);
+      } else {
+        // Si el archivo es muy pequeño o vacío, lo reintenta
+        const stats = fs.statSync(subPath);
+        if (stats.size < 100) {
+          needDownload = true;
+          console.log(`[SUB] .srt found but too small (${stats.size} bytes), will re-download: ${subPath}`);
+        }
+      }
+      if (needDownload) {
+        console.log(`[SUB] Downloading subtitle from ${fullSubUrl} to ${subPath}`);
         await client.streamAndDownload(fullSubUrl, subPath, 0, 1_000_000);
+        console.log(`[SUB] Download finished: ${subPath}`);
+      } else {
+        console.log(`[SUB] Subtitle already exists and is valid: ${subPath}`);
       }
 
-      // Convertir to .vtt TODO: not working
+      // Check if we need to convert to VTT
       let needsVtt = false;
       if (!fs.existsSync(vttPath)) {
         needsVtt = true;
+        console.log(`[SUB] .vtt not found, will convert: ${vttPath}`);
       } else {
         try {
           const vttContent = fs.readFileSync(vttPath, 'utf8');
           if (!vttContent.trim().startsWith('WEBVTT') || vttContent.trim().length < 10) {
             needsVtt = true;
-            console.warn(`[SUB] Archivo .vtt inválido o vacío, se forzará reconversión: ${vttPath}`);
+            console.warn(`[SUB] Invalid or empty .vtt file, forcing reconversion: ${vttPath}`);
           }
         } catch (e) {
           needsVtt = true;
         }
       }
+
+      // Convert if needed
       if (subExt !== '.vtt' && needsVtt) {
-        await new Promise((resolve, reject) => {
-          ffmpeg(subPath)
-            .outputOptions('-f webvtt')
-            .on('end', async () => {
-              let vttContent = fs.readFileSync(vttPath, 'utf8');
-              if (!vttContent.startsWith('WEBVTT')) {
-                vttContent = 'WEBVTT\n\n' + vttContent;
-                fs.writeFileSync(vttPath, vttContent, 'utf8');
-              }
-              console.log(`[SUB] Convertido ${subPath} -> ${vttPath}`);
-              resolve();
-            })
-            .on('error', (err) => {
-              console.error(`[FFMPEG Sub Error] (${subPath} -> ${vttPath}):`, err.message);
-              reject(err);
-            })
-            .save(vttPath);
-        });
+        try {
+          console.log(`[SUB] Starting conversion to VTT: ${subPath} -> ${vttPath}`);
+          await MovieController.convertToVtt(subPath, vttPath);
+          console.log(`[SUB] Conversion to VTT finished: ${vttPath}`);
+        } catch (error) {
+          console.error(`[FFMPEG Sub Critical Error] Failed to convert subtitle: ${error.message}`);
+        }
+      } else if (subExt !== '.vtt') {
+        console.log(`[SUB] VTT already exists and is valid: ${vttPath}`);
       }
     });
+
     await Promise.all(tasks);
   }
 
   static async fetchSubtitles(req, res) {
     const { id } = req.params;
-
     if (!id) {
       return res.status(400).json({ msg: 'Missing movie ID' });
     }
-
     const MOVIES_PATH = process.env.MOVIES_PATH || './downloads/movies';
     const subsDir = path.resolve(MOVIES_PATH, id, 'subs');
 
-    let subtitles = [];
-    if (!fs.existsSync(subsDir) || fs.readdirSync(subsDir).filter(f => f.endsWith('.vtt')).length === 0) {
-      // download & convert subtitles
+    // download/conversion in background (no await)
+    (async () => {
       try {
         const movie = await moviesModel.getById({ id });
-        if (!movie || !movie.torrent_url) return res.json({ subtitles: [] });
+        if (!movie || !movie.torrent_url) return;
         const client = new TorrentClient(id, movie.torrent_url);
         const torrent = await client.openTorrent();
-        if (!torrent) return res.json({ subtitles: [] });
+        if (!torrent) return;
         const webSeeds = client.getWebSeeds(torrent);
-        if (!webSeeds.length) return res.json({ subtitles: [] });
+        if (!webSeeds.length) return;
         const baseUrl = webSeeds[0].endsWith('/') ? webSeeds[0] : webSeeds[0] + '/';
         await MovieController.getSubtitles(torrent, baseUrl, id, client);
       } catch (err) {
-        console.error('[SUBTITLE FETCH ERROR]', err.message);
-        return res.json({ subtitles: [] });
+        console.error('[SUBTITLE FETCH ERROR - background]', err.message);
       }
-    }
+    })();
 
+    // return available .vtt
+    let subtitles = [];
     if (fs.existsSync(subsDir)) {
       const files = fs.readdirSync(subsDir);
       subtitles = files
@@ -278,12 +331,11 @@ export default class MovieController {
           };
         });
     }
-
     return res.json({ subtitles });
   }
 }
 
-function waitForLocalFile(filePath, size, timeoutMs = 10000) {
+function waitForLocalFile(filePath, size, timeoutMs = 10000) { // TODO: delete? 
   return new Promise((resolve, reject) => {
     const start = Date.now();
     (function check() {

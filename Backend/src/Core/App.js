@@ -67,17 +67,6 @@ export default class App {
 
         // TODO
         const MOVIES_PATH = process.env.MOVIES_PATH || './downloads/movies';
-        this.app.use('/movies/:id/subs', (req, res, next) => {
-            if (!req.session || !req.session.user) {
-                return res.status(401).json({ msg: 'Unauthorized' });
-            }
-            const file = req.path.replace(/^\//, '');
-            const absPath = path.join(MOVIES_PATH, req.params.id, 'subs', file);
-            if (!fs.existsSync(absPath)) {
-                return res.status(404).send('Subtitle not found');
-            }
-            res.sendFile(absPath);
-        });
         this.app.use('/movies', express.static(path.resolve(MOVIES_PATH)));
     }
 
