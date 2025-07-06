@@ -21,6 +21,7 @@ import { checkAuthStatusMiddleware } from '../Middlewares/checkAuthStatusMiddlew
 import AuthRouter from '../Routes/AuthRouter.js';
 import UsersRouter from '../Routes/UsersRouter.js';
 import MoviesRouter from '../Routes/MoviesRouter.js';
+import CommentsRouter from '../Routes/CommentsRouter.js';
 
 export default class App {
     constructor() {
@@ -74,5 +75,6 @@ export default class App {
         this.app.use(`${this.API_PREFIX}/auth`, AuthRouter.createRouter());
         this.app.use(`${this.API_PREFIX}/users`, UsersRouter.createRouter());
         this.app.use(`${this.API_PREFIX}/movies`, MoviesRouter.createRouter());
+        this.app.use(`${this.API_PREFIX}/comments`, CommentsRouter.createRouter());
     }
 }

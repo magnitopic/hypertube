@@ -22,5 +22,38 @@ export const useVideo = () => {
 			setLoading(false);
 		}
 	};
-	return { getVideoInfo, loading, error };
+
+	const getComments = async (id: string) => {
+		setLoading(true);
+		setError(null);
+		try {
+			const data = await videoApi.getComments(id);
+			return data.msg;
+		} catch (err) {
+			const errorMessage =
+				err instanceof Error ? err.message : "Failed to fetch comments";
+			setError(errorMessage);
+			throw new Error(errorMessage);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const addComment = async (id: string, comment: string) => {
+		setLoading(true);
+		setError(null);
+		try {
+			const data = await videoApi.addComment(id, comment);
+			return data.msg;
+		} catch (err) {
+			const errorMessage =
+				err instanceof Error ? err.message : "Failed to add comment";
+			setError(errorMessage);
+			throw new Error(errorMessage);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return { getVideoInfo, getComments, addComment, loading, error };
 };
