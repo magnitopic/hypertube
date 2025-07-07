@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 const UserBubbles = ({ user }) => {
 	const [showTooltip, setShowTooltip] = useState(false);
+	const [imageKey, setImageKey] = useState(Date.now()); // Add state for cache busting
 
 	return (
 		<div className="relative w-fit h-fit">
@@ -13,7 +14,7 @@ const UserBubbles = ({ user }) => {
 			>
 				<img
 					className="w-14 h-14 rounded-full object-cover hover:scale-110 transition-transform shadow-lg border-2 border-solid border-primary"
-					src={user.profilePicture}
+					src={`${user.profilePicture}?v=${imageKey}`}
 					alt="user profile picture"
 				/>
 				{showTooltip && (

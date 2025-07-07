@@ -43,7 +43,7 @@ export const useVideo = () => {
 		setError(null);
 		try {
 			const data = await videoApi.addComment(id, comment);
-			return data.msg;
+			return data.comment;
 		} catch (err: any) {
 			const errorMessage = err?.message || "Failed to add comment";
 			setError(errorMessage);

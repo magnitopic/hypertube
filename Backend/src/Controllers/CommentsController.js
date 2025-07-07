@@ -200,9 +200,18 @@ export default class CommentsController {
                 });
             }
 
+            const completeComment = await commentsModel.getCommentWithUsername(
+                newComment.id
+            );
+            if (!completeComment) {
+                return res.status(500).json({
+                    msg: StatusMessage.INTERNAL_SERVER_ERROR,
+                });
+            }
+
             return res.status(201).json({
                 msg: StatusMessage.COMMENT_CREATED_SUCCESSFULLY,
-                comment: newComment,
+                comment: completeComment,
             });
         } catch (error) {
             console.error('Error in createComment:', error);

@@ -9,17 +9,9 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
 const index: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
 
-	const [comments, setComments] = useState([
-		{
-			id: "405ddb7f-f702-4081-8a3b-690b8a61e9df",
-			content: "Test comment",
-			movie_id: "96feee5f-d890-4417-930d-1f3568e61746",
-			created_at: "2025-07-07T11:21:20.809Z",
-			username: "test",
-		},
-	]);
+	const [comments, setComments] = useState([]);
 
-	const { getVideoInfo } = useVideo();
+	const { getVideoInfo, getComments, addComment } = useVideo();
 	const [videoInfo, setVideoInfo] = useState(null);
 	const [videoUrl, setVideoUrl] = useState("");
 	type SubtitleTrack = {
@@ -73,6 +65,23 @@ const index: React.FC = () => {
 		fetchVideoInfo();
 	}, [id]);
 
+	// comments
+	useEffect(() => {
+		if (!id) return;
+
+		const fetchComments = async () => {
+			try {
+				const commentsData = await getComments(id);
+				setComments(Array.isArray(commentsData) ? commentsData : []);
+			} catch (err) {
+				console.error("Error fetching comments:", err);
+				setError("Failed to load comments");
+			}
+		};
+
+		fetchComments();
+	}, [id]);
+
 	// subtitles
 	useEffect(() => {
 		if (!id) return;
@@ -123,17 +132,16 @@ const index: React.FC = () => {
 		setActiveSubtitle(value === "none" ? null : value);
 	};
 
-	const handleNewComment = (e) => {
+	const handleNewComment = async (e) => {
 		e.preventDefault();
-		setComments([
-			{
-				username: "user2",
-				profilePicture:
-					"https://github.com/magnitopic/matcha/blob/main/Frontend/public/person2.png?raw=true",
-				comment: e.target[0].value,
-			},
-			...comments,
-		]);
+
+		try {
+			const newComment = await addComment(id, e.target[0].value);
+			setComments([newComment, ...comments]);
+		} catch (error) {
+			console.error("Error adding comment:", error);
+		}
+
 		e.target[0].value = "";
 	};
 

@@ -35,23 +35,29 @@ class CommentsModel extends Model {
     async getCommentWithUsername(commentId) {
         const query = {
             text: `
-                SELECT 
-                    c.id,
-                    c.content,
-                    c.movie_id,
-                    c.created_at,
-                    u.username
-                FROM ${this.table} c
-                JOIN users u ON c.user_id = u.id
-                WHERE c.id = $1;
-            `,
+            SELECT 
+                c.id,
+                c.content,
+                c.movie_id,
+                c.created_at,
+                u.username,
+                u.id as user_id
+            FROM ${this.table} c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.id = $1;
+        `,
             values: [commentId],
         };
 
         try {
             const result = await this.db.query(query);
             if (result.rows.length === 0) return [];
-            return result.rows[0];
+
+            const comment = result.rows[0];
+            const { API_HOST, API_PORT, API_VERSION } = process.env;
+            comment.profilePicture = `http://${API_HOST}:${API_PORT}/api/v${API_VERSION}/users/${comment.user_id}/profile-picture`;
+
+            return comment;
         } catch (error) {
             console.error('Error making the query: ', error.message);
             return null;
@@ -61,25 +67,33 @@ class CommentsModel extends Model {
     async getCommentsByMovieId(movieId, limit = 20) {
         const query = {
             text: `
-                SELECT 
-                    c.id,
-                    c.content,
-                    c.movie_id,
-                    c.created_at,
-                    u.username
-                FROM ${this.table} c
-                JOIN users u ON c.user_id = u.id
-                WHERE c.movie_id = $1
-                ORDER BY c.created_at DESC
-                LIMIT $2;
-            `,
+            SELECT 
+                c.id,
+                c.content,
+                c.movie_id,
+                c.created_at,
+                u.username,
+                u.id as user_id
+            FROM ${this.table} c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.movie_id = $1
+            ORDER BY c.created_at DESC
+            LIMIT $2;
+        `,
             values: [movieId, limit],
         };
 
         try {
             const result = await this.db.query(query);
             if (result.rows.length === 0) return [];
-            return result.rows;
+
+            const { API_HOST, API_PORT, API_VERSION } = process.env;
+            const commentsWithProfilePictures = result.rows.map((comment) => ({
+                ...comment,
+                profilePicture: `http://${API_HOST}:${API_PORT}/api/v${API_VERSION}/users/${comment.user_id}/profile-picture`,
+            }));
+
+            return commentsWithProfilePictures;
         } catch (error) {
             console.error('Error making the query: ', error.message);
             return null;
