@@ -21,6 +21,7 @@ const index: React.FC = () => {
 	};
 	const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrack[]>([]);
 	const [loadingSubtitles, setLoadingSubtitles] = useState(true);
+	const [blobUrls, setBlobUrls] = useState<Record<string, string>>({});
 	const [subtitleError, setSubtitleError] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
@@ -92,23 +93,28 @@ const index: React.FC = () => {
 			try {
 				const res = await fetch(`${API_URL}/movies/${id}/subtitles`, {
 					credentials: "include",
-					headers: {
-						Accept: "application/json",
-					},
+					headers: { Accept: "application/json" },
 				});
-				if (!res.ok) {
-					throw new Error(`HTTP error! status: ${res.status}`);
-				}
+
+				if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 				const data = await res.json();
-				if (data && Array.isArray(data.subtitles)) {
+
+				if (Array.isArray(data.subtitles)) {
 					setSubtitleTracks(data.subtitles);
-					// Set English as default if available
-					const enSub = data.subtitles.find(
-						(sub) => sub.lang === "en"
+
+					// manual fetch .vtt
+					const blobs: Record<string, string> = {};
+					await Promise.all(
+						data.subtitles.map(async (sub) => {
+							const fileRes = await fetch(`${API_URL}${sub.url}`, {
+								credentials: "include",
+							});
+							const text = await fileRes.text();
+							const blob = new Blob([text], { type: "text/vtt" });
+							blobs[sub.lang] = URL.createObjectURL(blob);
+						})
 					);
-					if (enSub) {
-						setActiveSubtitle(enSub.lang);
-					}
+					setBlobUrls(blobs);
 				} else {
 					setSubtitleTracks([]);
 					setSubtitleError("No subtitles available");
@@ -178,7 +184,7 @@ const index: React.FC = () => {
 									<track
 										key={sub.lang}
 										kind="subtitles"
-										src={`${API_URL}${sub.url}`}
+										src={blobUrls[sub.lang]} // Blob-safe local URL
 										srcLang={sub.lang}
 										label={sub.label}
 										default={sub.lang === activeSubtitle}
@@ -187,29 +193,6 @@ const index: React.FC = () => {
 							)}
 							Your browser does not support HTML5 video.
 						</video>
-						{!loadingSubtitles && subtitleTracks.length > 0 && (
-							<div className="flex items-center gap-2">
-								<label
-									htmlFor="subtitles"
-									className="text-sm font-medium"
-								>
-									Subtitles:
-								</label>
-								<select
-									id="subtitles"
-									value={activeSubtitle || "none"}
-									onChange={handleSubtitleChange}
-									className="p-2 rounded bg-background-secondary text-sm"
-								>
-									<option value="none">None</option>
-									{subtitleTracks.map((sub) => (
-										<option key={sub.lang} value={sub.lang}>
-											{sub.label}
-										</option>
-									))}
-								</select>
-							</div>
-						)}
 						{subtitleError && (
 							<p className="text-red-500 text-sm">
 								{subtitleError}
