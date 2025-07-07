@@ -4,6 +4,7 @@ import fs from 'fs';
 
 // Local Imports:
 import LibraryController from '../Controllers/LibraryController.js';
+import CommentsController from '../Controllers/CommentsController.js';
 import MovieController from '../Controllers/MovieController.js';
 
 export default class MoviesRouter {

@@ -143,4 +143,10 @@ export default class StatusMessage {
     static SEARCH_QUERY_REQUIRED = 'Search query is required.';
     static MOVIE_NOT_FOUND = 'Movie not found.';
     static ERROR_GETTING_GENRES = 'There was a problem getting movie genres.';
+    static COMMENT_NOT_FOUND = 'Comment not found.';
+    static COMMENT_CREATED_SUCCESSFULLY = 'Comment created successfully.';
+    static COMMENT_UPDATED_SUCCESSFULLY = 'Comment updated successfully.';
+    static COMMENT_DELETED_SUCCESSFULLY = 'Comment deleted successfully.';
+    static COMMENT_NOT_FOUND_OR_UNAUTHORIZED =
+        'Comment not found or you are not authorized to modify it.';
 }

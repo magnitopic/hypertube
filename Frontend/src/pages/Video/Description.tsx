@@ -20,7 +20,9 @@ const Description: React.FC = ({ videoInfo }) => {
 								{videoInfo && videoInfo.year}
 							</span>
 						</h2>
-						<p>Length: {"3h"}</p>
+						{videoInfo && videoInfo.runtime && (
+							<p>Length: {videoInfo.runtime} minutes</p>
+						)}
 					</div>
 					<div className="flex items-center flex-col px-2">
 						<p className="text-sm">TMDb rating</p>

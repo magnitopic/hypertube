@@ -4,7 +4,7 @@ import { ProfileData } from "../../services/api/profile";
 
 export const usePublicProfile = (username: string) => {
 	const [profile, setProfile] = useState<ProfileData | null>(null);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [notFound, setNotFound] = useState(false);
 

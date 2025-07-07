@@ -1,24 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Description from "./Description";
-import CommentBubble from "./CommentBubble";
 import { useVideo } from "../../hooks/PageData/useVideo";
+import CommentSection from "./CommentSection";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
 
 const index: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
 
-	const [comments, setComments] = useState([
-		{
-			username: "user1",
-			profilePicture:
-				"https://github.com/magnitopic/matcha/blob/main/Frontend/public/person.png?raw=true",
-			comment: "This is a great movie",
-		},
-	]);
+	const [comments, setComments] = useState([]);
 
-	const { getVideoInfo } = useVideo();
+	const { getVideoInfo, getComments, addComment } = useVideo();
 	const [videoInfo, setVideoInfo] = useState(null);
 	const [videoUrl, setVideoUrl] = useState("");
 	type SubtitleTrack = {
@@ -73,7 +66,24 @@ const index: React.FC = () => {
 		fetchVideoInfo();
 	}, [id]);
 
-	// subtitles 
+	// comments
+	useEffect(() => {
+		if (!id) return;
+
+		const fetchComments = async () => {
+			try {
+				const commentsData = await getComments(id);
+				setComments(Array.isArray(commentsData) ? commentsData : []);
+			} catch (err) {
+				console.error("Error fetching comments:", err);
+				setError("Failed to load comments");
+			}
+		};
+
+		fetchComments();
+	}, [id]);
+
+	// subtitles
 	useEffect(() => {
 		if (!id) return;
 
@@ -81,6 +91,7 @@ const index: React.FC = () => {
 			setLoadingSubtitles(true);
 			setSubtitleError("");
 			try {
+				const res = await fetch(`${API_URL}/movies/${id}/subtitles`, {
 				const res = await fetch(`${API_URL}/movies/${id}/subtitles`, {
 					credentials: "include",
 					headers: { Accept: "application/json" },
@@ -121,22 +132,23 @@ const index: React.FC = () => {
 		fetchSubtitles();
 	}, [id]);
 
-	const handleSubtitleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+	const handleSubtitleChange = (
+		event: React.ChangeEvent<HTMLSelectElement>
+	) => {
 		const value = event.target.value;
-		setActiveSubtitle(value === 'none' ? null : value);
+		setActiveSubtitle(value === "none" ? null : value);
 	};
 
-	const handleNewComment = (e) => {
+	const handleNewComment = async (e) => {
 		e.preventDefault();
-		setComments([
-			{
-				username: "user2",
-				profilePicture:
-					"https://github.com/magnitopic/matcha/blob/main/Frontend/public/person2.png?raw=true",
-				comment: e.target[0].value,
-			},
-			...comments,
-		]);
+
+		try {
+			const newComment = await addComment(id, e.target[0].value);
+			setComments([newComment, ...comments]);
+		} catch (error) {
+			console.error("Error adding comment:", error);
+		}
+
 		e.target[0].value = "";
 	};
 
@@ -149,12 +161,25 @@ const index: React.FC = () => {
 					<p className="text-red-500">{error}</p>
 				) : (
 					<div className="flex flex-col gap-4">
-						<video className="w-full rounded-lg bg-black" controls autoPlay>
-							<source src={videoUrl} type={getMimeType(videoUrl)} />
+						<video
+							className="w-full rounded-lg bg-black"
+							controls
+							autoPlay
+						>
+							<source
+								src={videoUrl}
+								type={getMimeType(videoUrl)}
+							/>
 							{loadingSubtitles ? (
-								<track kind="subtitles" label="Loading subtitles..." />
+								<track
+									kind="subtitles"
+									label="Loading subtitles..."
+								/>
 							) : subtitleTracks.length === 0 ? (
-								<track kind="subtitles" label="No subtitles available" />
+								<track
+									kind="subtitles"
+									label="No subtitles available"
+								/>
 							) : (
 								subtitleTracks.map((sub) => (
 									<track
@@ -170,7 +195,9 @@ const index: React.FC = () => {
 							Your browser does not support HTML5 video.
 						</video>
 						{subtitleError && (
-							<p className="text-red-500 text-sm">{subtitleError}</p>
+							<p className="text-red-500 text-sm">
+								{subtitleError}
+							</p>
 						)}
 					</div>
 				)}
@@ -179,32 +206,10 @@ const index: React.FC = () => {
 				<Description videoInfo={videoInfo} />
 			</section>
 			<section className="container max-w-4xl mx-auto pt-12 px-4 flex flex-col gap-6">
-				<div className="flex flex-col gap-4 w-full bg-background-secondary p-4 mb-8 rounded-lg">
-					<h2 className="underline text-2xl">Comments</h2>
-					<form
-						className="flex flex-row h-16"
-						onSubmit={handleNewComment}
-					>
-						<input
-							type="text"
-							className="w-full p-4 rounded-l-lg bg-background-primary"
-							placeholder="Add a comment"
-						/>
-						<button
-							type="submit"
-							className="bg-primary text-white rounded-r-lg w-14 h-full flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							<i className="fa fa-paper-plane" />
-						</button>
-					</form>
-					<div className="flex flex-col gap-4">
-						{comments.map((comment, index) => {
-							return (
-								<CommentBubble comment={comment} key={index} />
-							);
-						})}
-					</div>
-				</div>
+				<CommentSection
+					comments={comments}
+					handleNewComment={handleNewComment}
+				/>
 			</section>
 		</main>
 	);

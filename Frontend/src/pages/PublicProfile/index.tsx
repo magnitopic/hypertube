@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { usePublicProfile } from "../../hooks/PageData/usePublicProfile";
 import { useProfile } from "../../hooks/PageData/useProfile";
-import { useUsers } from "../../hooks/PageData/useUsers";
 import { useAuth } from "../../context/AuthContext";
 import Spinner from "../../components/common/Spinner";
-import ProfileHeader from "./ProfileHeader";
+import MainInformation from "../../components/profile/MainInformation";
 import Info from "../../components/profile/Info";
 
 const index = () => {
@@ -19,14 +18,12 @@ const index = () => {
 	} = usePublicProfile(username || "");
 	const { profile: currentUserProfile, loading: currentUserLoading } =
 		useProfile(user?.id);
-	const { getUserDistance } = useUsers();
 
 	const [userProfile, setUserProfile] = useState(profile);
 
 	useEffect(() => {
 		setUserProfile(profile);
 	}, [profile]);
-
 
 	const handleProfileUpdate = (updatedData) => {
 		setUserProfile((prev) => ({ ...prev, ...updatedData }));
@@ -58,13 +55,11 @@ const index = () => {
 	return (
 		<main className="flex flex-1 justify-center items-center flex-col">
 			<section className="w-full bg-gradient-to-br from-red-200 to-purple-200 flex flex-col items-center gap-12">
-				<ProfileHeader
-					user={userProfile}
-					onProfileUpdate={handleProfileUpdate}
-				/>
+				<section className="container max-w-4xl text-center mt-20 px-3 relative">
+					<MainInformation user={userProfile} />
+				</section>
 			</section>
 			<Info user={userProfile} />
-			<TagSection tags={userProfile.tags} />
 		</main>
 	);
 };

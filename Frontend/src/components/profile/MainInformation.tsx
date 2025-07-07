@@ -8,7 +8,6 @@ interface MainInformationProps {
 		age: number;
 		first_name: string;
 		last_name: string;
-		distance?: string;
 	};
 }
 

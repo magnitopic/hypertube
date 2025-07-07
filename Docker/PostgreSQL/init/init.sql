@@ -58,6 +58,15 @@ CREATE TABLE liked_movies (
     UNIQUE (user_id, movie_id)
 );
 
+CREATE TABLE comments (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    content TEXT NOT NULL,
+    movie_id UUID NOT NULL REFERENCES movies(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 ALTER TABLE users
 ADD CONSTRAINT fk_profile_picture
 FOREIGN KEY (profile_picture) REFERENCES images(id) ON DELETE SET NULL;
@@ -65,3 +74,6 @@ FOREIGN KEY (profile_picture) REFERENCES images(id) ON DELETE SET NULL;
 -- Index for faster queries
 CREATE INDEX idx_watched_movies_user_id ON watched_movies(user_id);
 CREATE INDEX idx_watched_movies_movie_id ON watched_movies(movie_id);
+CREATE INDEX idx_comments_movie_id ON comments(movie_id);
+CREATE INDEX idx_comments_user_id ON comments(user_id);
+CREATE INDEX idx_comments_created_at ON comments(created_at DESC);
