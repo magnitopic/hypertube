@@ -2,7 +2,7 @@ import { useState } from "react";
 import { libraryApi } from "../../services/api/library";
 
 export const useLibrary = () => {
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
 	const getLibrary = async (page: number, queryParams = {}) => {
