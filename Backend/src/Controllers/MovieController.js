@@ -300,39 +300,55 @@ export default class MovieController {
     const subsDir = path.resolve(MOVIES_PATH, id, 'subs');
 
     // download/conversion in background (no await)
-    (async () => {
-      try {
-        const movie = await moviesModel.getById({ id });
-        if (!movie || !movie.torrent_url) return;
-        const client = new TorrentClient(id, movie.torrent_url);
-        const torrent = await client.openTorrent();
-        if (!torrent) return;
-        const webSeeds = client.getWebSeeds(torrent);
-        if (!webSeeds.length) return;
-        const baseUrl = webSeeds[0].endsWith('/') ? webSeeds[0] : webSeeds[0] + '/';
-        await MovieController.getSubtitles(torrent, baseUrl, id, client);
-      } catch (err) {
-        console.error('[SUBTITLE FETCH ERROR - background]', err.message);
-      }
-    })();
+    try {
+      const movie = await moviesModel.getById({ id });
+      if (!movie || !movie.torrent_url) return;
+      const client = new TorrentClient(id, movie.torrent_url);
+      const torrent = await client.openTorrent();
+      if (!torrent) return;
+      const webSeeds = client.getWebSeeds(torrent);
+      if (!webSeeds.length) return;
+      const baseUrl = webSeeds[0].endsWith('/') ? webSeeds[0] : webSeeds[0] + '/';
+      await MovieController.getSubtitles(torrent, baseUrl, id, client);
 
-    // return available .vtt
-    let subtitles = [];
-    if (fs.existsSync(subsDir)) {
-      const files = fs.readdirSync(subsDir);
-      subtitles = files
-        .filter(f => f.endsWith('.vtt'))
-        .map(f => {
-          const lang = path.basename(f, '.vtt');
-          return {
-            lang,
-            label: lang === 'en' ? 'English' : lang === 'es' ? 'Español' : lang,
-            url: `/movies/${id}/subs/${f}`
-          };
-        });
+      // return available .vtt
+      let subtitles = [];
+      if (fs.existsSync(subsDir)) {
+        const files = fs.readdirSync(subsDir);
+        subtitles = files
+          .filter(f => f.endsWith('.vtt'))
+          .map(f => {
+            const lang = path.basename(f, '.vtt');
+            return {
+              lang,
+              label: lang === 'en' ? 'English' : lang === 'es' ? 'Español' : lang,
+              url: `/movies/${id}/subs/${f}`
+            };
+          });
+      }
+      return res.json({ subtitles });
+    } catch (err) {
+      console.error('[SUBTITLE FETCH ERROR - background]', err.message);
     }
-    return res.json({ subtitles });
   }
+
+  static serveSubtitleFile(req, res) {
+    if (!req.session || !req.session.user) {
+      return res.status(401).json({ msg: 'Unauthorized' });
+    }
+
+    const { id, file } = req.params;
+    const MOVIES_PATH = process.env.MOVIES_PATH || './downloads/movies';
+    const absPath = path.resolve(MOVIES_PATH, id, 'subs', file);
+
+    if (!fs.existsSync(absPath)) {
+      return res.status(404).send('Subtitle not found');
+    }
+
+    res.setHeader('Content-Type', 'text/vtt');
+    res.sendFile(absPath);
+  }
+
 }
 
 function waitForLocalFile(filePath, size, timeoutMs = 10000) { // TODO: delete? 
