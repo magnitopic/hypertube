@@ -17,10 +17,7 @@ export default class UsersRouter {
         router.get('/', UsersController.getAllUsers);
         router.get('/me', UsersController.getMe);
         router.get('/:username', UsersController.getUserProfile);
-        router.get(
-            '/:id/profile-picture',
-            ProfilePictureController.getProfilePicture
-        );
+        router.get('/:id/profile-picture', ProfilePictureController.getProfilePicture);
 
         // PATCH:
         router.patch(

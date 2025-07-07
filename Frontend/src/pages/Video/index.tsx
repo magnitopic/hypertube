@@ -9,16 +9,16 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api/v1";
 const index: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
 
-	const [comments, setComments] = useState([]);
-
-	const { getVideoInfo, getComments, addComment } = useVideo();
-	const [videoInfo, setVideoInfo] = useState(null);
-	const [videoUrl, setVideoUrl] = useState("");
 	type SubtitleTrack = {
 		url: string;
 		lang: string;
 		label: string;
 	};
+
+	const [comments, setComments] = useState([]);
+	const { getVideoInfo, getComments, addComment } = useVideo();
+	const [videoInfo, setVideoInfo] = useState(null);
+	const [videoUrl, setVideoUrl] = useState("");
 	const [subtitleTracks, setSubtitleTracks] = useState<SubtitleTrack[]>([]);
 	const [loadingSubtitles, setLoadingSubtitles] = useState(true);
 	const [blobUrls, setBlobUrls] = useState<Record<string, string>>({});
@@ -91,7 +91,6 @@ const index: React.FC = () => {
 			setLoadingSubtitles(true);
 			setSubtitleError("");
 			try {
-				const res = await fetch(`${API_URL}/movies/${id}/subtitles`, {
 				const res = await fetch(`${API_URL}/movies/${id}/subtitles`, {
 					credentials: "include",
 					headers: { Accept: "application/json" },

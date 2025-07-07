@@ -1,11 +1,8 @@
 import axios from 'axios';
 import fsExtra from 'fs-extra';
 import https from 'https';
-import http from 'http';
 import fs from 'fs';
 import bencode from 'bencode';
-import crypto from 'crypto';
-import { URL } from 'url';
 import EventEmitter from 'events';
 
 export default class TorrentClient {

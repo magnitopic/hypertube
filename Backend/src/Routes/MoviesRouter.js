@@ -19,6 +19,14 @@ export default class MoviesRouter {
         router.get('/library/:page?', LibraryController.library);
         router.get('/search/:page?', LibraryController.search);
         router.get('/:id/subs/:file', MovieController.serveSubtitleFile);
+        router.get(
+            '/:movie_id/comments',
+            CommentsController.getCommentsByMovieId
+        );
+        router.post(
+            '/:movie_id/comments',
+            CommentsController.createCommentForMovie
+        );
 
         return router;
     }
