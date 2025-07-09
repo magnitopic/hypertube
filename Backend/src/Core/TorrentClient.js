@@ -121,32 +121,54 @@ export default class TorrentClient {
   }
 
   // DOWNLOAD
-  async streamAndDownload(webSeedUrl, localPath, start, end) {
+  async streamAndDownload(webSeedUrl, localPath, start = 0, end = 1_000_000, downloadOnly = false) {
     console.log(`[TC] streamAndDownload called: webSeedUrl=${webSeedUrl}, localPath=${localPath}, start=${start}, end=${end}`);
+
     if (!this._downloadEmitter) {
       this._downloadEmitter = new EventEmitter();
+      this._downloadEmitter.setMaxListeners(100); // avoid limit warning
     }
+
     let stats = null;
     try {
       stats = await fsExtra.stat(localPath);
-    } catch (e) {}
-    // Download only if file not exists or too small
+    } catch (e) {
+      // File does not exist
+    }
+
     if (!stats || stats.size < end + 1) {
       if (!this._downloading) {
         this._downloading = true;
-        this._downloadedBytes = stats ? stats.size : 0;
-        this._downloadPromise = this._downloadFile(webSeedUrl, localPath, this._downloadedBytes);
-        console.log(`[TC] _downloadFile started at offset ${this._downloadedBytes}`);
+        const offset = stats ? stats.size : 0;
+        this._downloadPromise = this._downloadFile(webSeedUrl, localPath, offset);
+        console.log(`[TC] _downloadFile started at offset ${offset}`);
       } else {
         console.log(`[TC] download already in progress`);
       }
     } else {
       console.log(`[TC] local file already has enough data: size=${stats.size}`);
     }
+
+    // Await download to finish if downloadOnly is set
+    if (downloadOnly) {
+      try {
+        await this._downloadPromise;
+        console.log(`[TC] downloadOnly: finished download of ${localPath}`);
+        return;
+      } catch (err) {
+        console.error(`[TC] downloadOnly: failed download`, err);
+        throw err;
+      }
+    }
+
+    // Wait for file to contain desired range before streaming
     await this._waitForRange(localPath, end);
     console.log(`[TC] _waitForRange resolved for end=${end}`);
+
     return fs.createReadStream(localPath, { start, end });
   }
+
+
 
   // Restart download if file exists
   async _downloadFile(webSeedUrl, localPath, offset = 0) {

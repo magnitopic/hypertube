@@ -12,7 +12,6 @@ import TorrentClient from '../Core/TorrentClient.js';
 // fluent-ffmpeg
 if (ffmpegPath) {
   ffmpeg.setFfmpegPath(ffmpegPath);
-  console.log('[FFMPEG] Using bundled ffmpeg-static:', ffmpegPath);
 } else {
   console.error('[FFMPEG] ffmpeg-static not found. Subtitle/video conversion will fail.');
 }
@@ -109,6 +108,9 @@ export default class MovieController {
 
       // Size of remote file (torrent web seed)
       const remoteSize = await client.getRemoteFileSize(streamingUrl);
+      if (!remoteSize || isNaN(remoteSize)) {
+        return res.status(500).send('Failed to get remote file size');
+      }
       const safeEnd = Math.min(end, remoteSize - 1);
       const contentLength = safeEnd - start + 1;
 
@@ -175,12 +177,6 @@ export default class MovieController {
       console.log(`[SUB] Starting conversion ${sourcePath} -> ${targetPath}`);
       ffmpeg(sourcePath)
         .toFormat('webvtt')
-        .on('start', (commandLine) => {
-          console.log('[FFmpeg] Subtitle conversion command:', commandLine);
-        })
-        .on('progress', (progress) => {
-          console.log('[FFmpeg] Subtitle conversion progress:', progress);
-        })
         .on('end', async () => {
           try {
             let vttContent = fs.readFileSync(targetPath, 'utf8');
@@ -224,14 +220,29 @@ export default class MovieController {
       const lower = subFilePath.toLowerCase();
       if (lower.match(/(\.|_|-|\/)en(\.|_|-|\/|$)/)) lang = 'en';
       else if (lower.match(/(\.|_|-|\/)es(\.|_|-|\/|$)/)) lang = 'es';
+      else if (lower.match(/(\.|_|-|\/)de(\.|_|-|\/|$)/)) lang = 'de';
       else {
-        lang = path.basename(subFilePath, subExt);
+        lang = 'auto';
       }
 
       const subDir = path.resolve(MOVIES_PATH, movieId, 'subs');
-      const baseName = path.basename(subFilePath, subExt);
-      const subPath = path.resolve(subDir, baseName + subExt);
-      const vttPath = path.resolve(subDir, baseName + '.vtt');
+
+      function getUniqueSubPath(baseDir, lang, ext) {
+        let i = 0;
+        let fileName;
+        let fullPath;
+
+        do {
+          fileName = i === 0 ? `${lang}${ext}` : `${lang}-${i}${ext}`;
+          fullPath = path.join(baseDir, fileName);
+          i++;
+        } while (fs.existsSync(fullPath));
+
+        return fullPath;
+      }
+
+      const subPath = getUniqueSubPath(subDir, lang, subExt);
+      const vttPath = subPath.replace(subExt, '.vtt');
 
       if (!fs.existsSync(subDir)) {
         fs.mkdirSync(subDir, { recursive: true });
@@ -242,7 +253,6 @@ export default class MovieController {
         needDownload = true;
         console.log(`[SUB] .srt not found, will download: ${subPath}`);
       } else {
-        // Si el archivo es muy pequeño o vacío, lo reintenta
         const stats = fs.statSync(subPath);
         if (stats.size < 100) {
           needDownload = true;
@@ -251,7 +261,7 @@ export default class MovieController {
       }
       if (needDownload) {
         console.log(`[SUB] Downloading subtitle from ${fullSubUrl} to ${subPath}`);
-        await client.streamAndDownload(fullSubUrl, subPath, 0, 1_000_000);
+        await client.streamAndDownload(fullSubUrl, subPath, 0, 1_000_000, true);
         console.log(`[SUB] Download finished: ${subPath}`);
       } else {
         console.log(`[SUB] Subtitle already exists and is valid: ${subPath}`);
@@ -349,17 +359,4 @@ export default class MovieController {
     res.sendFile(absPath);
   }
 
-}
-
-function waitForLocalFile(filePath, size, timeoutMs = 10000) { // TODO: delete? 
-  return new Promise((resolve, reject) => {
-    const start = Date.now();
-    (function check() {
-      fs.stat(filePath, (err, stats) => {
-        if (!err && stats.size >= size) return resolve();
-        if (Date.now() - start > timeoutMs) return reject(new Error('Timeout waiting bytes'));
-        setTimeout(check, 50);
-      });
-    })();
-  });
 }
