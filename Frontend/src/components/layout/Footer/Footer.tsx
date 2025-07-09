@@ -17,12 +17,12 @@ const Footer = () => {
 						</Link>
 						{" & "}
 						<Link
-							to="https://profile.intra.42.fr/users/alaaouam"
+							to="https://profile.intra.42.fr/users/adiaz-uf"
 							className="underline"
 							target="_blank"
 							rel="noopener noreferrer"
 						>
-							alaaouam
+							adiaz-uf
 						</Link>
 					</p>
 				</div>
