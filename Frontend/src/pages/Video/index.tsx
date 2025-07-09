@@ -138,17 +138,22 @@ const index: React.FC = () => {
 		setActiveSubtitle(value === "none" ? null : value);
 	};
 
+	// add new comment
 	const handleNewComment = async (e) => {
 		e.preventDefault();
-
+		if (!e.target[0].value.trim()) {
+			e.target[0].value = "";
+			return;
+		}
+		
 		try {
 			const newComment = await addComment(id, e.target[0].value);
 			setComments([newComment, ...comments]);
-		} catch (error) {
-			console.error("Error adding comment:", error);
-		}
-
-		e.target[0].value = "";
+			} catch (error) {
+				console.error("Error adding comment:", error);
+				}
+				
+				e.target[0].value = "";
 	};
 
 	return (
