@@ -59,7 +59,7 @@ const index = () => {
 					<MainInformation user={userProfile} />
 				</section>
 			</section>
-			<Info user={userProfile} />
+			<Info user={userProfile} isOwnProfile={false} />
 		</main>
 	);
 };

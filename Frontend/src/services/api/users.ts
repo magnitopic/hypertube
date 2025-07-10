@@ -47,4 +47,11 @@ export const usersApi = {
 		const response = await apiRequest(`browser`);
 		return response;
 	},
+
+	getLatestWatchedMovies: async (userId: string, limit: number = 5) => {
+		const response = await apiRequest(
+			`users/${userId}/watched-movies?limit=${limit}`
+		);
+		return response;
+	},
 };

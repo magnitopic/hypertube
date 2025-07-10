@@ -1,6 +1,8 @@
 import capitalizeLetters from "../../utils/capitalizeLetters";
+import WatchedMoviesSection from "./WatchedMoviesSection";
 
 interface UserData {
+	id: string;
 	first_name: string;
 	last_name: string;
 	username: string;
@@ -11,13 +13,15 @@ interface UserData {
 	last_online: number;
 	gender: string;
 	sexual_preference: string;
+	prefered_language?: string;
 }
 
 interface InfoProps {
 	user: UserData;
+	isOwnProfile?: boolean;
 }
 
-const Info: React.FC<InfoProps> = ({ user }) => {
+const Info: React.FC<InfoProps> = ({ user, isOwnProfile = false }) => {
 	const preferenceDisplay =
 		user.sexual_preference === "bisexual"
 			? "Male & Female"
@@ -53,6 +57,10 @@ const Info: React.FC<InfoProps> = ({ user }) => {
 					</p>
 				</div>
 			) : null}
+			<WatchedMoviesSection
+				userId={user.id}
+				isOwnProfile={isOwnProfile}
+			/>
 		</section>
 	);
 };
