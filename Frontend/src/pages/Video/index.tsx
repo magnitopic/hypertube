@@ -222,7 +222,7 @@ const index: React.FC = () => {
 				)}
 			</section>
 			<section className="container max-w-4xl mx-auto pt-4 px-4">
-				<Description videoInfo={videoInfo} />
+				<Description videoInfo={videoInfo} videoId={id} />
 			</section>
 			<section className="container max-w-4xl mx-auto pt-12 px-4 flex flex-col gap-6">
 				<CommentSection

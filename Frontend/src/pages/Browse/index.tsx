@@ -84,11 +84,6 @@ const index = () => {
 		fetchPage: createFetchFunction(currentSearchParams),
 		initialPage: 1,
 	});
-
-	if (movies.length > 0) {
-		movies[0] = { ...movies[0], isWatched: true, isLiked: true };
-	}
-
 	const searchTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const newSearchType = e.target.value;
 		setSearchType(newSearchType);

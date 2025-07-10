@@ -24,7 +24,7 @@ export default class MoviesRouter {
         // POST:
         router.post('/:movie_id/comments', CommentsController.createCommentForMovie);
         router.post('/:id/watched', WatchedMoviesController.createOrUpdateWatchedMovie);
-
+        router.post('/:id/like', MovieController.toggleLike);
 
         return router;
     }

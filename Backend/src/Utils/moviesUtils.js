@@ -84,6 +84,8 @@ export async function getWatchAndLikeStatus(userId, movies) {
         movie.isWatched = isWatched;
         const isLiked = await likedMovies.isMovieLiked(userId, movie.id);
         movie.isLiked = isLiked;
+        const totalLikes = await likedMovies.getTotalLikes(movie.id);
+        movie.totalLikes = totalLikes;
     }
 }
 

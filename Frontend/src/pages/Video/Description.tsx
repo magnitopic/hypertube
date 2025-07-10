@@ -1,14 +1,26 @@
 import React from "react";
+import LikeButton from "../../components/common/LikeButton";
 
-const Description: React.FC = ({ videoInfo }) => {
+const Description: React.FC = ({ videoInfo, videoId }) => {
 	return (
 		<div className="w-full bg-background-secondary p-4 rounded-lg mb-7 flex flex-col-reverse md:flex-row gap-4">
-			<div className="w-full md:w-1/4 flex items-center justify-center">
-				<img
-					src={videoInfo && videoInfo.thumbnail}
-					alt="Movie Poster"
-					className="rounded-lg h-fit max-h-80"
-				/>
+			<div className="w-full md:w-1/4">
+				<div className="flex flex-col items-center gap-2 xl:items-start">
+					{videoInfo && (
+						<LikeButton
+							initialLiked={videoInfo && videoInfo.isLiked}
+							videoId={videoId}
+							initialTotalLikes={
+								videoInfo && videoInfo.totalLikes
+							}
+						/>
+					)}
+					<img
+						src={videoInfo && videoInfo.thumbnail}
+						alt="Movie Poster"
+						className="rounded-lg h-fit max-h-80"
+					/>
+				</div>
 			</div>
 			<div className="flex flex-col gap-4 w-full md:w-3/4">
 				<div className="flex justify-between items-start">

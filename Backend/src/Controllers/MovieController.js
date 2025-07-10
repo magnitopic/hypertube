@@ -31,7 +31,9 @@ export default class MovieController {
     }
 
     const isLiked = await likedMoviesModel.isMovieLiked(userId, movie.id);
+    const totalLikes = await likedMoviesModel.getTotalLikes(movie.id);
     movie.isLiked = isLiked;
+    movie.totalLikes = totalLikes;
 
     return res.json({ msg: movie });
   }
@@ -334,6 +336,38 @@ export default class MovieController {
 
     res.setHeader('Content-Type', 'text/vtt');
     res.sendFile(absPath);
+  }
+
+  static async toggleLike(req, res) {
+    const userId = req.session.user.id;
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ msg: StatusMessage.BAD_REQUEST });
+    }
+
+    // Check if movie exists
+    const movie = await moviesModel.getById({ id });
+    if (!movie || movie.length === 0) {
+      return res.status(404).json({ msg: StatusMessage.MOVIE_NOT_FOUND });
+    }
+
+    try {
+      const result = await likedMoviesModel.toggleLike(userId, id);
+      
+      if (result.success) {
+        return res.json({ 
+          msg: 'Like status updated successfully',
+          liked: result.liked,
+          totalLikes: result.totalLikes
+        });
+      } else {
+        return res.status(500).json({ msg: 'Failed to update like status' });
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error.message);
+      return res.status(500).json({ msg: 'Internal server error' });
+    }
   }
 
 }

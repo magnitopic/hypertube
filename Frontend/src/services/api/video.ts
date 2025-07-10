@@ -19,4 +19,15 @@ export const videoApi = {
 		});
 		return response;
 	},
+	likeMovie: async (
+		id: string
+	): Promise<{ liked: boolean; totalLikes: number; msg: string }> => {
+		const response = await apiRequest(`movies/${id}/like`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		return response;
+	},
 };
