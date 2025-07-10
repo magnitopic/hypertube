@@ -50,5 +50,18 @@ export const useLibrary = () => {
 		}
 	};
 
-	return { getLibrary, searchLibrary, getGenres, loading, error };
+	const getRandomMovie = async () => {
+		setError(null);
+		try {
+			const movie = await libraryApi.getRandomMovie();
+			return movie;
+		} catch (err) {
+			const errorMessage =
+				err instanceof Error ? err.message : "Failed to fetch random movie";
+			setError(errorMessage);
+			throw new Error(errorMessage);
+		}
+	};
+
+	return { getLibrary, searchLibrary, getGenres, getRandomMovie, loading, error };
 };

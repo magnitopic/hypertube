@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useProfile } from "../../hooks/PageData/useProfile";
 import { useAuth } from "../../context/AuthContext";
 import { useLibrary } from "../../hooks/PageData/useLibrary";
 import Spinner from "../../components/common/Spinner";
 import SortSection from "./SortSection";
 import Search from "./Search";
-import calculateAge from "../../utils/calculateAge";
+import RandomMovieButton from "./RandomMovieButton";
 import ThumbnailBox from "./ThumbnailBox";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import MsgCard from "../../components/common/MsgCard";
@@ -13,7 +12,6 @@ import ISO6391 from "iso-639-1";
 
 const index = () => {
 	const { user } = useAuth();
-	const { profile } = useProfile(user?.id || "");
 	const { getLibrary, searchLibrary, getGenres } = useLibrary();
 
 	const [searchType, setSearchType] = useState("title");
@@ -25,6 +23,7 @@ const index = () => {
 	const [orderType, setOrderType] = useState("ASC");
 	const [isSearchMode, setIsSearchMode] = useState(false);
 	const [currentSearchParams, setCurrentSearchParams] = useState({});
+	const [randomMovieLoading, setRandomMovieLoading] = useState(false);
 
 	useEffect(() => {
 		if (searchType === "genres" && availableGenres.length === 0) {
@@ -174,6 +173,13 @@ const index = () => {
 			)}
 
 			<h1 className="text-4xl font-bold">Library</h1>
+
+			{/* Random Movie Button */}
+			<RandomMovieButton
+				loading={randomMovieLoading}
+				setLoading={setRandomMovieLoading}
+			/>
+
 			<section className="container max-w-7xl px-4 flex flex-col w-full items-center xl:items-start gap-6">
 				<Search
 					searchType={searchType}

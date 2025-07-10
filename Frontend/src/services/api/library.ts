@@ -20,4 +20,9 @@ export const libraryApi = {
 		const response = await apiRequest("movies/genres");
 		return response.msg;
 	},
+
+	getRandomMovie: async (): Promise<any> => {
+		const response = await apiRequest("movies/random");
+		return response.msg;
+	},
 };

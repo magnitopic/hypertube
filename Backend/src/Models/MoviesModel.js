@@ -65,6 +65,33 @@ class MoviesModel extends Model {
             return null;
         }
     }
+
+    async getRandomMovie() {
+        const fields = [
+            'id',
+            'title',
+            'year',
+            'rating',
+            'thumbnail',
+            'popularity',
+            'language',
+            'genres',
+        ];
+
+        const query = {
+            text: `SELECT ${fields} FROM ${this.table} ORDER BY RANDOM() LIMIT 1;`,
+            values: [],
+        };
+
+        try {
+            const result = await this.db.query(query);
+            if (result.rows.length === 0) return null;
+            return result.rows[0];
+        } catch (error) {
+            console.error('Error getting random movie: ', error.message);
+            return null;
+        }
+    }
 }
 
 const moviesModel = new MoviesModel();

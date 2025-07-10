@@ -13,6 +13,7 @@ export default class MoviesRouter {
 
         // GET:
         router.get('/genres', MovieController.getGenres);
+        router.get('/random', LibraryController.getRandomMovie);
         router.get('/:id', MovieController.moviePage);
         router.get('/stream/:id', MovieController.streamMovie);
         router.get('/:id/subtitles', MovieController.fetchSubtitles);
