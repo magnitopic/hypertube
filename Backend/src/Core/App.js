@@ -4,10 +4,12 @@ import 'dotenv/config';
 import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import path from 'path';
-import fs from 'fs';
 
 // Local Imports:
 import SocketHandler from '../Sockets/SocketHandler.js'; // TODO: Remove if not used by the end of the project
+
+// Launch cron script
+import '../../scripts/cron.js';
 
 // Middleware Imports:
 import { corsMiddleware } from '../Middlewares/corsMiddleware.js';

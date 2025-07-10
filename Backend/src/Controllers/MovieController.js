@@ -82,13 +82,6 @@ export default class MovieController {
         });
       }
       filePathInTorrent = (preferred || torrent.info.files[0]).path.map(p => p.toString()).join('/');
-      const subtitleExtensions = ['.srt', '.ass', '.vtt'];
-      const subtitleFiles = torrent.info.files
-        .filter(f => subtitleExtensions.some(ext =>
-          f.path.map(p => p.toString()).join('/').toLowerCase().endsWith(ext)
-        ))
-        .map(f => f.path.map(p => p.toString()).join('/'));
-
     } else {
       filePathInTorrent = torrent.info.name.toString();
     }
@@ -224,25 +217,9 @@ export default class MovieController {
       else {
         lang = 'auto';
       }
-
       const subDir = path.resolve(MOVIES_PATH, movieId, 'subs');
-
-      function getUniqueSubPath(baseDir, lang, ext) {
-        let i = 0;
-        let fileName;
-        let fullPath;
-
-        do {
-          fileName = i === 0 ? `${lang}${ext}` : `${lang}-${i}${ext}`;
-          fullPath = path.join(baseDir, fileName);
-          i++;
-        } while (fs.existsSync(fullPath));
-
-        return fullPath;
-      }
-
-      const subPath = getUniqueSubPath(subDir, lang, subExt);
-      const vttPath = subPath.replace(subExt, '.vtt');
+      const subPath = path.resolve(subDir, lang + subExt);
+      const vttPath = path.resolve(subDir, lang + '.vtt');
 
       if (!fs.existsSync(subDir)) {
         fs.mkdirSync(subDir, { recursive: true });

@@ -131,14 +131,7 @@ const index: React.FC = () => {
 		fetchSubtitles();
 	}, [id]);
 
-	const handleSubtitleChange = (
-		event: React.ChangeEvent<HTMLSelectElement>
-	) => {
-		const value = event.target.value;
-		setActiveSubtitle(value === "none" ? null : value);
-	};
-
-	const handleNewComment = async (e) => {
+	const handleNewComment = async (e: { preventDefault: () => void; target: { value: string; }[]; }) => {
 		e.preventDefault();
 
 		try {
@@ -150,6 +143,22 @@ const index: React.FC = () => {
 
 		e.target[0].value = "";
 	};
+
+	const handleMarkAsWatched = async () => {
+		if (!id) return;
+
+		try {
+			await fetch(`${API_URL}/movies/${id}/watched`, {
+				method: "POST",
+				credentials: "include",
+				headers: { "Content-Type": "application/json" },
+			});
+			console.log("Movie marked as watched");
+		} catch (err) {
+			console.error("Error setting movie as watched: ", err);
+		}
+	};
+
 
 	return (
 		<main className="flex flex-1 justify-center items-center flex-col">
@@ -164,6 +173,7 @@ const index: React.FC = () => {
 							className="w-full rounded-lg bg-black"
 							controls
 							autoPlay
+							onPlay={handleMarkAsWatched} // Set movie as watched
 						>
 							<source
 								src={videoUrl}

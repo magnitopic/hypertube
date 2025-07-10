@@ -48,6 +48,7 @@ CREATE TABLE watched_movies (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     movie_id UUID REFERENCES movies(id) ON DELETE CASCADE,
+    watched_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE (user_id, movie_id)
 );
 
