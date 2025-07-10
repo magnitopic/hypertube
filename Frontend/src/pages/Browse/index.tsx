@@ -9,6 +9,7 @@ import ThumbnailBox from "./ThumbnailBox";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import MsgCard from "../../components/common/MsgCard";
 import ISO6391 from "iso-639-1";
+import RegularButton from "../../components/common/RegularButton";
 
 const index = () => {
 	const { user } = useAuth();
@@ -174,12 +175,7 @@ const index = () => {
 
 			<h1 className="text-4xl font-bold">Library</h1>
 
-			{/* Random Movie Button */}
-			<RandomMovieButton
-				loading={randomMovieLoading}
-				setLoading={setRandomMovieLoading}
-			/>
-
+			{/* Search and filters */}
 			<section className="container max-w-7xl px-4 flex flex-col w-full items-center xl:items-start gap-6">
 				<Search
 					searchType={searchType}
@@ -193,13 +189,37 @@ const index = () => {
 					loadingGenres={loadingGenres}
 				/>
 				{isSearchMode && (
-					<SortSection
-						onSort={handleSort}
-						sortBy={orderBy}
-						sortOrder={orderType}
-					/>
+					<>
+						<SortSection
+							onSort={handleSort}
+							sortBy={orderBy}
+							sortOrder={orderType}
+						/>
+						<RegularButton
+							callback={() => {
+								setIsSearchMode(false);
+								setCurrentSearchParams({});
+								resetItems();
+							}}
+							value="Clear Search"
+							icon="fa fa-times"
+							type="button"
+						/>
+					</>
 				)}
 			</section>
+			{/* Random Movie Button */}
+			{!isSearchMode && (
+				<section className=" pb-20">
+					<RandomMovieButton
+						loading={randomMovieLoading}
+						setLoading={setRandomMovieLoading}
+					/>
+				</section>
+			)}
+			{!isSearchMode && (
+				<h2 className="text-2xl font-bold">Popular Movies</h2>
+			)}
 			<section className="container max-w-7xl pt-10 px-4 flex flex-row justify-between w-full items-center flex-grow">
 				<div className="flex flex-wrap md:justify-start justify-center gap-x-8 gap-y-10 w-full">
 					{/* No movies to load */}
