@@ -81,7 +81,6 @@ export async function sendEmail(email, subject, body) {
     };
 
     const info = await transporter.sendMail(mail);
-    console.info('Email info: ', info);
 }
 
 export async function hashPassword(password) {
