@@ -10,6 +10,7 @@ export default async function cleanup() {
     const query = `
       SELECT movie_id
       FROM watched_movies
+      WHERE downloaded = TRUE
       GROUP BY movie_id
       HAVING MAX(watched_at) < $1
     `;
@@ -34,7 +35,10 @@ export default async function cleanup() {
     }
 
     if (movieIds.length > 0) { // Delete from DB
-      await db.query(`DELETE FROM watched_movies WHERE movie_id = ANY($1)`, [movieIds]);
+      await db.query(
+        `UPDATE watched_movies SET downloaded = FALSE WHERE movie_id = ANY($1)`,
+        [movieIds]
+      );
       console.log(`Deleted ${movieIds.length} records from watched_movies.`);
     } else {
       console.log('No records to delete from watched_movies.');

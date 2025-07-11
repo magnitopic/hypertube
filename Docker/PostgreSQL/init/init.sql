@@ -49,6 +49,7 @@ CREATE TABLE watched_movies (
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     movie_id UUID REFERENCES movies(id) ON DELETE CASCADE,
     watched_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    downloaded BOOLEAN DEFAULT TRUE,
     UNIQUE (user_id, movie_id)
 );
 

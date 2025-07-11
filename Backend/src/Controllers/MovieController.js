@@ -174,7 +174,6 @@ export default class MovieController {
           try {
             let vttContent = fs.readFileSync(targetPath, 'utf8');
             if (!vttContent.startsWith('WEBVTT')) {
-              console.log('[SUB] Adding WEBVTT header');
               vttContent = 'WEBVTT\n\n' + vttContent;
               fs.writeFileSync(targetPath, vttContent, 'utf8');
             }
@@ -228,7 +227,6 @@ export default class MovieController {
       let needDownload = false;
       if (!fs.existsSync(subPath)) {
         needDownload = true;
-        console.log(`[SUB] .srt not found, will download: ${subPath}`);
       } else {
         const stats = fs.statSync(subPath);
         if (stats.size < 100) {
@@ -237,7 +235,6 @@ export default class MovieController {
         }
       }
       if (needDownload) {
-        console.log(`[SUB] Downloading subtitle from ${fullSubUrl} to ${subPath}`);
         await client.streamAndDownload(fullSubUrl, subPath, 0, 1_000_000, true);
         console.log(`[SUB] Download finished: ${subPath}`);
       } else {
@@ -264,7 +261,6 @@ export default class MovieController {
       // Convert if needed
       if (subExt !== '.vtt' && needsVtt) {
         try {
-          console.log(`[SUB] Starting conversion to VTT: ${subPath} -> ${vttPath}`);
           await MovieController.convertToVtt(subPath, vttPath);
           console.log(`[SUB] Conversion to VTT finished: ${vttPath}`);
         } catch (error) {
@@ -308,7 +304,7 @@ export default class MovieController {
             const lang = path.basename(f, '.vtt');
             return {
               lang,
-              label: lang === 'en' ? 'English' : lang === 'es' ? 'Español' : lang,
+              label: lang === 'en' ? 'English' : lang === 'es' ? 'Español' : lang === 'de' ? 'German' : lang,
               url: `/movies/${id}/subs/${f}`
             };
           });
