@@ -12,6 +12,7 @@ export default class MoviesRouter {
         const router = Router();
 
         // GET:
+        router.get('/', MovieController.getAllMovies)
         router.get('/genres', MovieController.getGenres);
         router.get('/:id', MovieController.moviePage);
         router.get('/stream/:id', MovieController.streamMovie);

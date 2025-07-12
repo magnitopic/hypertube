@@ -36,6 +36,21 @@ export default class MovieController {
     return res.json({ msg: movie });
   }
 
+  static async getAllMovies(req, res) {
+    try {
+      const movies = await MovieModel.getAll();
+
+      if (movies === null) {
+        return res.status(500).json({ message: 'Internal server error' });
+      }
+
+      return res.status(200).json(movies);
+    } catch (error) {
+      console.error('Error in getAllMovies:', error.message);
+      return res.status(500).json({ message: 'Something went wrong' });
+    }
+  }
+
   static async getGenres(req, res) {
     const movieGenres = await getMovieGenres();
     if (!movieGenres) {
