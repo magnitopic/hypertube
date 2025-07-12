@@ -53,5 +53,20 @@ export const useVideo = () => {
 		}
 	};
 
-	return { getVideoInfo, getComments, addComment, loading, error };
+	const likeMovie = async (id: string): Promise => {
+		setLoading(true);
+		setError(null);
+		try {
+			const data = await videoApi.likeMovie(id);
+			return data;
+		} catch (err: any) {
+			const errorMessage = err?.message || "Failed to like movie";
+			setError(errorMessage);
+			throw new Error(errorMessage);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	return { getVideoInfo, getComments, addComment, likeMovie, loading, error };
 };

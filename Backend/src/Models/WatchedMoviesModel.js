@@ -64,6 +64,34 @@ class WatchedMoviesModel extends Model {
         const result = await this.db.query(query, values);
         return result.rows[0];
     }
+
+    async getLatestWatchedMoviesByUser(userId, limit = 5) {
+        const query = {
+            text: `
+                SELECT 
+                    m.id,
+                    m.title,
+                    m.year,
+                    m.thumbnail,
+                    m.rating,
+                    wm.watched_at
+                FROM ${this.table} wm
+                JOIN movies m ON wm.movie_id = m.id
+                WHERE wm.user_id = $1
+                ORDER BY wm.watched_at DESC
+                LIMIT $2;
+            `,
+            values: [userId, limit],
+        };
+
+        try {
+            const result = await this.db.query(query);
+            return result.rows;
+        } catch (error) {
+            console.error('Error getting latest watched movies:', error.message);
+            return null;
+        }
+    }
 }
 
 const watchedMoviesModel = new WatchedMoviesModel();

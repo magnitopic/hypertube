@@ -42,7 +42,7 @@ const index = () => {
 			<section className="w-full bg-gradient-to-br from-orange-200 to-purple-200 flex flex-col items-center gap-12">
 				<ProfileHeader user={profile} />
 			</section>
-			<Info user={profile} />
+			<Info user={profile} isOwnProfile={true} />
 		</main>
 	);
 };

@@ -14,6 +14,7 @@ export default class MoviesRouter {
         // GET:
         router.get('/', MovieController.getAllMovies)
         router.get('/genres', MovieController.getGenres);
+        router.get('/random', LibraryController.getRandomMovie);
         router.get('/:id', MovieController.moviePage);
         router.get('/stream/:id', MovieController.streamMovie);
         router.get('/:id/subtitles', MovieController.fetchSubtitles);
@@ -25,7 +26,7 @@ export default class MoviesRouter {
         // POST:
         router.post('/:movie_id/comments', CommentsController.createCommentForMovie);
         router.post('/:id/watched', WatchedMoviesController.createOrUpdateWatchedMovie);
-
+        router.post('/:id/like', MovieController.toggleLike);
 
         return router;
     }

@@ -96,7 +96,8 @@ const index: React.FC = () => {
 					headers: { Accept: "application/json" },
 				});
 
-				if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+				if (!res.ok)
+					throw new Error(`HTTP error! status: ${res.status}`);
 				const data = await res.json();
 
 				if (Array.isArray(data.subtitles)) {
@@ -106,9 +107,12 @@ const index: React.FC = () => {
 					const blobs: Record<string, string> = {};
 					await Promise.all(
 						data.subtitles.map(async (sub) => {
-							const fileRes = await fetch(`${API_URL}${sub.url}`, {
-								credentials: "include",
-							});
+							const fileRes = await fetch(
+								`${API_URL}${sub.url}`,
+								{
+									credentials: "include",
+								}
+							);
 							const text = await fileRes.text();
 							const blob = new Blob([text], { type: "text/vtt" });
 							blobs[sub.lang] = URL.createObjectURL(blob);
@@ -131,8 +135,15 @@ const index: React.FC = () => {
 		fetchSubtitles();
 	}, [id]);
 
-	const handleNewComment = async (e: { preventDefault: () => void; target: { value: string; }[]; }) => {
+	const handleNewComment = async (e: {
+		preventDefault: () => void;
+		target: { value: string }[];
+	}) => {
 		e.preventDefault();
+		if (!e.target[0].value.trim()) {
+			e.target[0].value = "";
+			return;
+		}
 
 		try {
 			const newComment = await addComment(id, e.target[0].value);
@@ -158,7 +169,6 @@ const index: React.FC = () => {
 			console.error("Error setting movie as watched: ", err);
 		}
 	};
-
 
 	return (
 		<main className="flex flex-1 justify-center items-center flex-col">
@@ -212,7 +222,7 @@ const index: React.FC = () => {
 				)}
 			</section>
 			<section className="container max-w-4xl mx-auto pt-4 px-4">
-				<Description videoInfo={videoInfo} />
+				<Description videoInfo={videoInfo} videoId={id} />
 			</section>
 			<section className="container max-w-4xl mx-auto pt-12 px-4 flex flex-col gap-6">
 				<CommentSection

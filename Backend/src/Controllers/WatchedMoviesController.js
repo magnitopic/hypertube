@@ -1,6 +1,6 @@
-
 // Local imports
 import watchedMoviesModel from "../Models/WatchedMoviesModel.js";
+import StatusMessage from '../Utils/StatusMessage.js';
 
 export default class WatchedMoviesController {
     static async createOrUpdateWatchedMovie(req, res) {
@@ -30,6 +30,32 @@ export default class WatchedMoviesController {
         } catch (err) {
             console.error('Error creating/updating watched movie:', err);
             return res.status(500).json({ error: 'Server error' });
+        }
+    }
+
+    static async getLatestWatchedMovies(req, res) {
+        try {
+            const { userId } = req.params;
+            const limit = parseInt(req.query.limit) || 5;
+
+            console.log('Fetching watched movies for userId:', userId, 'with limit:', limit);
+
+            if (!userId) {
+                return res.status(400).json({ msg: StatusMessage.BAD_REQUEST });
+            }
+
+            const watchedMovies = await watchedMoviesModel.getLatestWatchedMoviesByUser(userId, limit);
+
+            console.log('Watched movies result:', watchedMovies);
+
+            if (watchedMovies === null) {
+                return res.status(500).json({ msg: StatusMessage.INTERNAL_SERVER_ERROR });
+            }
+
+            return res.json({ msg: watchedMovies });
+        } catch (error) {
+            console.error('Error getting latest watched movies:', error);
+            return res.status(500).json({ msg: StatusMessage.INTERNAL_SERVER_ERROR });
         }
     }
 }

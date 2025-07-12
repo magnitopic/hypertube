@@ -7,9 +7,6 @@ export const libraryApi = {
 	},
 
 	searchLibrary: async (page: number, params = {}): Promise<any> => {
-		console.log("____________________");
-		console.log("params", params);
-
 		const paramsString = new URLSearchParams(params).toString();
 		const queryString = paramsString ? `?${paramsString}` : "";
 
@@ -21,6 +18,11 @@ export const libraryApi = {
 
 	getGenres: async (): Promise<string[]> => {
 		const response = await apiRequest("movies/genres");
+		return response.msg;
+	},
+
+	getRandomMovie: async (): Promise<any> => {
+		const response = await apiRequest("movies/random");
 		return response.msg;
 	},
 };

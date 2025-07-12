@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { useProfile } from "../../hooks/PageData/useProfile";
 import { useAuth } from "../../context/AuthContext";
 import { useLibrary } from "../../hooks/PageData/useLibrary";
 import Spinner from "../../components/common/Spinner";
 import SortSection from "./SortSection";
 import Search from "./Search";
-import calculateAge from "../../utils/calculateAge";
+import RandomMovieButton from "./RandomMovieButton";
 import ThumbnailBox from "./ThumbnailBox";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
 import MsgCard from "../../components/common/MsgCard";
 import ISO6391 from "iso-639-1";
+import RegularButton from "../../components/common/RegularButton";
 
 const index = () => {
 	const { user } = useAuth();
-	const { profile } = useProfile(user?.id || "");
 	const { getLibrary, searchLibrary, getGenres } = useLibrary();
 
 	const [searchType, setSearchType] = useState("title");
@@ -25,6 +24,7 @@ const index = () => {
 	const [orderType, setOrderType] = useState("ASC");
 	const [isSearchMode, setIsSearchMode] = useState(false);
 	const [currentSearchParams, setCurrentSearchParams] = useState({});
+	const [randomMovieLoading, setRandomMovieLoading] = useState(false);
 
 	useEffect(() => {
 		if (searchType === "genres" && availableGenres.length === 0) {
@@ -84,11 +84,6 @@ const index = () => {
 		fetchPage: createFetchFunction(currentSearchParams),
 		initialPage: 1,
 	});
-
-	if (movies.length > 0) {
-		movies[0] = { ...movies[0], isWatched: true, isLiked: true };
-	}
-
 	const searchTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const newSearchType = e.target.value;
 		setSearchType(newSearchType);
@@ -179,6 +174,8 @@ const index = () => {
 			)}
 
 			<h1 className="text-4xl font-bold">Library</h1>
+
+			{/* Search and filters */}
 			<section className="container max-w-7xl px-4 flex flex-col w-full items-center xl:items-start gap-6">
 				<Search
 					searchType={searchType}
@@ -192,13 +189,37 @@ const index = () => {
 					loadingGenres={loadingGenres}
 				/>
 				{isSearchMode && (
-					<SortSection
-						onSort={handleSort}
-						sortBy={orderBy}
-						sortOrder={orderType}
-					/>
+					<>
+						<SortSection
+							onSort={handleSort}
+							sortBy={orderBy}
+							sortOrder={orderType}
+						/>
+						<RegularButton
+							callback={() => {
+								setIsSearchMode(false);
+								setCurrentSearchParams({});
+								resetItems();
+							}}
+							value="Clear Search"
+							icon="fa fa-times"
+							type="button"
+						/>
+					</>
 				)}
 			</section>
+			{/* Random Movie Button */}
+			{!isSearchMode && (
+				<section className=" pb-20">
+					<RandomMovieButton
+						loading={randomMovieLoading}
+						setLoading={setRandomMovieLoading}
+					/>
+				</section>
+			)}
+			{!isSearchMode && (
+				<h2 className="text-2xl font-bold">Popular Movies</h2>
+			)}
 			<section className="container max-w-7xl pt-10 px-4 flex flex-row justify-between w-full items-center flex-grow">
 				<div className="flex flex-wrap md:justify-start justify-center gap-x-8 gap-y-10 w-full">
 					{/* No movies to load */}

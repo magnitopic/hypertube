@@ -1,27 +1,46 @@
 import React from "react";
+import LikeButton from "../../components/common/LikeButton";
 
-const Description: React.FC = ({ videoInfo }) => {
+const Description: React.FC = ({ videoInfo, videoId }) => {
 	return (
 		<div className="w-full bg-background-secondary p-4 rounded-lg mb-7 flex flex-col-reverse md:flex-row gap-4">
-			<div className="w-full md:w-1/4 flex items-center justify-center">
-				<img
-					src={videoInfo && videoInfo.thumbnail}
-					alt="Movie Poster"
-					className="rounded-lg h-fit max-h-80"
-				/>
+			<div className="w-full md:w-1/4">
+				<div className="flex flex-col items-center gap-2 xl:items-start">
+					{videoInfo && (
+						<LikeButton
+							initialLiked={videoInfo && videoInfo.isLiked}
+							videoId={videoId}
+							initialTotalLikes={
+								videoInfo && videoInfo.totalLikes
+							}
+						/>
+					)}
+					<img
+						src={videoInfo && videoInfo.thumbnail}
+						alt="Movie Poster"
+						className="rounded-lg h-fit max-h-80"
+					/>
+				</div>
 			</div>
 			<div className="flex flex-col gap-4 w-full md:w-3/4">
 				<div className="flex justify-between items-start">
 					<div className="w-3/4 pr-4">
 						<h2 className="text-2xl font-semibold break-words">
 							{videoInfo && videoInfo.title}
-							<span> | </span>
-							<span className="text-xl text-gray-400">
-								{videoInfo && videoInfo.year}
-							</span>
+							{videoInfo && videoInfo.year && (
+								<>
+									<span> | </span>
+									<span className="text-xl text-gray-400">
+										{videoInfo.year}
+									</span>
+								</>
+							)}
 						</h2>
 						{videoInfo && videoInfo.runtime && (
-							<p>Length: {videoInfo.runtime} minutes</p>
+							<p>
+								<span className="font-bold">Length:</span>{" "}
+								{videoInfo.runtime} minutes
+							</p>
 						)}
 					</div>
 					<div className="flex items-center flex-col px-2">
@@ -35,9 +54,11 @@ const Description: React.FC = ({ videoInfo }) => {
 						</p>
 					</div>
 				</div>
-				<div>
-					<div className="flex gap-4 flex-wrap items-center">
-						<label className="text-lg underline">Director</label>
+				<div className="flex flex-col gap-2">
+					<div className="flex flex-col">
+						<label className="text-lg underline font-bold">
+							Director
+						</label>
 						<p>
 							{videoInfo &&
 							videoInfo.directors &&
@@ -49,8 +70,8 @@ const Description: React.FC = ({ videoInfo }) => {
 					{videoInfo &&
 						videoInfo.writers &&
 						videoInfo.writers.length > 0 && (
-							<div className="flex gap-4 flex-wrap items-center">
-								<label className="text-lg underline">
+							<div className="flex flex-col">
+								<label className="text-lg underline font-bold">
 									Writer{videoInfo.writers.length > 1 && "s"}
 								</label>
 								<p>
@@ -68,8 +89,8 @@ const Description: React.FC = ({ videoInfo }) => {
 					{videoInfo &&
 						videoInfo.stars &&
 						videoInfo.stars.length > 0 && (
-							<div className="flex gap-4 flex-wrap items-center">
-								<label className="text-lg underline">
+							<div className="flex flex-col">
+								<label className="text-lg underline font-bold">
 									Star{videoInfo.stars.length > 1 && "s"}
 								</label>
 								<p>
@@ -85,13 +106,15 @@ const Description: React.FC = ({ videoInfo }) => {
 								</p>
 							</div>
 						)}
+					{videoInfo && videoInfo.description && (
+						<div>
+							<label className="text-lg underline font-bold">
+								Summary
+							</label>
+							<p>{videoInfo && videoInfo.description}</p>
+						</div>
+					)}
 				</div>
-				{videoInfo && videoInfo.description && (
-					<div>
-						<label className="text-lg underline">Summary</label>
-						<p>{videoInfo && videoInfo.description}</p>
-					</div>
-				)}
 			</div>
 		</div>
 	);

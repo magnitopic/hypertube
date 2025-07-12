@@ -59,4 +59,17 @@ export default class LibraryController {
 
         return res.json({ msg: movies });
     }
+
+    static async getRandomMovie(req, res) {
+        const userId = req.session.user.id;
+
+        const movie = await moviesModel.getRandomMovie();
+        if (!movie) {
+            return res.status(404).json({ msg: 'No movies found' });
+        }
+
+        await getWatchAndLikeStatus(userId, [movie]);
+
+        return res.json({ msg: movie });
+    }
 }

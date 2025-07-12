@@ -3,10 +3,6 @@ import z from 'zod';
 
 // Local Imports:
 import StatusMessage from '../Utils/StatusMessage.js';
-import {
-    checkBadWords,
-    checkPasswordVulnerabilities,
-} from '../Validations/authValidations.js';
 
 const disallowedUsernames = [
     'admin',
@@ -54,19 +50,6 @@ const userSchema = z.object({
             {
                 message: 'This username is not allowed.',
             }
-        )
-        .superRefine(
-            (username, ctx) => {
-                const result = checkBadWords(username, 'Username');
-                if (!result.success)
-                    ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
-                        message: result.message,
-                    });
-            },
-            {
-                message: 'Invalid username.',
-            }
         ),
     first_name: z
         .string({
@@ -74,40 +57,14 @@ const userSchema = z.object({
             required_error: 'First name is required.',
         })
         .min(3, 'First name must be at least 3 characters long.')
-        .max(30, 'First name must be 30 characters or fewer.')
-        .superRefine(
-            (first_name, ctx) => {
-                const result = checkBadWords(first_name, 'First name');
-                if (!result.success)
-                    ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
-                        message: result.message,
-                    });
-            },
-            {
-                message: 'Invalid first name.',
-            }
-        ),
+        .max(30, 'First name must be 30 characters or fewer.'),
     last_name: z
         .string({
             invalid_type_error: 'Invalid last name.',
             required_error: 'Last name is required.',
         })
         .min(3, 'Last name must be at least 3 characters long.')
-        .max(30, 'Last name must be 30 characters or fewer.')
-        .superRefine(
-            (last_name, ctx) => {
-                const result = checkBadWords(last_name, 'Last name');
-                if (!result.success)
-                    ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
-                        message: result.message,
-                    });
-            },
-            {
-                message: 'Invalid last name.',
-            }
-        ),
+        .max(30, 'Last name must be 30 characters or fewer.'),
     password: z
         .string({
             required_error: 'Password is required.',
@@ -117,19 +74,6 @@ const userSchema = z.object({
         .regex(
             /^(?=.*[A-Z])(?=.*[a-z])(?=.*[+.\-_*$@!?%&])(?=.*\d)[A-Za-z\d+.\-_*$@!?%&]+$/,
             { message: StatusMessage.INVALID_PASSWORD }
-        )
-        .superRefine(
-            async (password, ctx) => {
-                const result = await checkPasswordVulnerabilities(password);
-                if (!result.success)
-                    ctx.addIssue({
-                        code: z.ZodIssueCode.custom,
-                        message: result.message,
-                    });
-            },
-            {
-                message: 'Password fails security requirements.',
-            }
         ),
     biography: z
         .string({
