@@ -100,6 +100,25 @@ class CommentsModel extends Model {
         }
     }
 
+    async getCommentCountByMovieId(movieId) {
+        const query = {
+            text: `
+                SELECT COUNT(*) as comment_count
+                FROM ${this.table}
+                WHERE movie_id = $1;
+            `,
+            values: [movieId],
+        };
+
+        try {
+            const result = await this.db.query(query);
+            return parseInt(result.rows[0].comment_count) || 0;
+        } catch (error) {
+            console.error('Error making the query: ', error.message);
+            return 0;
+        }
+    }
+
     async updateComment(commentId, userId, content) {
         const query = {
             text: `
