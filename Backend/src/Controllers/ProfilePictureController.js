@@ -16,15 +16,25 @@ export default class ProfilePictureController {
         if (user.length === 0)
             return res.status(404).json({ msg: StatusMessage.USER_NOT_FOUND });
 
+        // If profile picture is a URL, redirect to it
+        if (user.profile_picture_is_url && user.profile_picture) {
+            return res.redirect(user.profile_picture);
+        }
+
         let profilePicturePath = user.profile_picture;
         if (!profilePicturePath)
             profilePicturePath =
                 '/backend/static/images/default-profile-picture.png';
         const imagePath = path.join(profilePicturePath);
+
         res.sendFile(imagePath, (error) => {
             if (error) {
                 console.error('ERROR:', error);
-                res.status(404).json({ msg: StatusMessage.IMAGE_NOT_FOUND });
+                if (!res.headersSent) {
+                    res.status(404).json({
+                        msg: StatusMessage.IMAGE_NOT_FOUND,
+                    });
+                }
             }
         });
     }
@@ -72,6 +82,11 @@ export default class ProfilePictureController {
                     404,
                     StatusMessage.USER_NOT_FOUND
                 );
+
+            // Reset the URL flag since user uploaded a file
+            const resetUrlFlag = { profile_picture_is_url: false };
+            await userModel.update({ input: resetUrlFlag, id });
+
             return res.json({
                 msg: `http://${API_HOST}:${API_PORT}/api/v${API_VERSION}/users/${id}/profile-picture`,
             });
@@ -93,6 +108,9 @@ export default class ProfilePictureController {
         if (user.length === 0)
             return returnErrorStatus(res, 404, StatusMessage.USER_NOT_FOUND);
         if (!user.profile_picture) return true;
+
+        // If the profile picture is a URL, we don't need to delete a file
+        if (user.profile_picture_is_url) return true;
 
         try {
             await fsExtra.remove(user.profile_picture);

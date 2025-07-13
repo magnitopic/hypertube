@@ -59,7 +59,7 @@ export default class CommentsController {
 
     static async updateComment(req, res) {
         const { id } = req.params;
-        const { comment } = req.body;
+        const { content } = req.body;
         const userId = req.session.user.id;
 
         if (!id) {
@@ -69,7 +69,7 @@ export default class CommentsController {
         }
 
         // Validate comment content
-        const validation = await validateComment({ comment });
+        const validation = await validateComment({ comment: content });
         if (!validation.success) {
             return res.status(400).json({
                 msg: validation.error.errors[0].message,
@@ -80,7 +80,7 @@ export default class CommentsController {
             const updatedComment = await commentsModel.updateComment(
                 id,
                 userId,
-                comment
+                content
             );
 
             if (updatedComment === null) {
@@ -223,7 +223,7 @@ export default class CommentsController {
 
     static async createCommentForMovie(req, res) {
         const { movie_id } = req.params;
-        const { comment } = req.body;
+        const { content } = req.body;
         const userId = req.session.user.id;
 
         if (!movie_id) {

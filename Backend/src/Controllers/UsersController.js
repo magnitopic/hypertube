@@ -2,8 +2,10 @@
 import userModel from '../Models/UserModel.js';
 import { validatePartialUser } from '../Schemas/userSchema.js';
 import getPublicUser from '../Utils/getPublicUser.js';
+import getSimpleUser from '../Utils/getSimpleUser.js';
 import StatusMessage from '../Utils/StatusMessage.js';
 import { returnErrorStatus } from '../Utils/errorUtils.js';
+import { hashPassword } from '../Utils/authUtils.js';
 
 export default class UsersController {
     static async getAllUsers(req, res) {
@@ -49,12 +51,12 @@ export default class UsersController {
                 return res
                     .status(404)
                     .json({ msg: StatusMessage.NOT_FOUND_BY_ID });
-            const publicUser = getPublicUser(user);
-            if (!publicUser)
+            const simpleUser = await getSimpleUser(user);
+            if (!simpleUser)
                 return res
                     .status(500)
                     .json({ msg: StatusMessage.INTERNAL_SERVER_ERROR });
-            return res.json({ msg: publicUser });
+            return res.json({ msg: simpleUser });
         }
         return res.status(500).json({ msg: StatusMessage.QUERY_ERROR });
     }
@@ -91,6 +93,17 @@ export default class UsersController {
 
         let user = null;
         if (!inputHasNoContent) {
+            if (input.password) {
+                input.password = await hashPassword(input.password);
+            }
+
+            // Handle profile picture URL
+            if (input.profile_picture_url) {
+                input.profile_picture = input.profile_picture_url;
+                input.profile_picture_is_url = true;
+                delete input.profile_picture_url; // Remove the URL field as we store it in profile_picture
+            }
+
             user = await userModel.update({ input, id });
         } else {
             user = await userModel.getById({ id });
@@ -121,12 +134,6 @@ export default class UsersController {
                 StatusMessage.NO_PROFILE_INFO_TO_EDIT
             );
 
-        if (input.username)
-            return returnErrorStatus(
-                res,
-                403,
-                StatusMessage.CANNOT_CHANGE_USERNAME
-            );
         if (input.email && req.session.user.oauth)
             return returnErrorStatus(
                 res,
@@ -135,19 +142,22 @@ export default class UsersController {
             );
 
         const { email, username } = input;
-        const isUnique = await userModel.isUnique({ email, username });
-        if (!isUnique) {
-            if (email)
-                return returnErrorStatus(
-                    res,
-                    400,
-                    StatusMessage.DUPLICATE_EMAIL
-                );
-            return returnErrorStatus(
-                res,
-                400,
-                StatusMessage.DUPLICATE_USERNAME
-            );
+        if (email || username) {
+            const isUnique = await userModel.isUnique({ email, username });
+            if (!isUnique) {
+                if (email)
+                    return returnErrorStatus(
+                        res,
+                        400,
+                        StatusMessage.DUPLICATE_EMAIL
+                    );
+                if (username)
+                    return returnErrorStatus(
+                        res,
+                        400,
+                        StatusMessage.DUPLICATE_USERNAME
+                    );
+            }
         }
         return { input, inputHasNoContent };
     }

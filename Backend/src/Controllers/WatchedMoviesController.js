@@ -38,15 +38,11 @@ export default class WatchedMoviesController {
             const { userId } = req.params;
             const limit = parseInt(req.query.limit) || 5;
 
-            console.log('Fetching watched movies for userId:', userId, 'with limit:', limit);
-
             if (!userId) {
                 return res.status(400).json({ msg: StatusMessage.BAD_REQUEST });
             }
 
             const watchedMovies = await watchedMoviesModel.getLatestWatchedMoviesByUser(userId, limit);
-
-            console.log('Watched movies result:', watchedMovies);
 
             if (watchedMovies === null) {
                 return res.status(500).json({ msg: StatusMessage.INTERNAL_SERVER_ERROR });

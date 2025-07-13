@@ -19,15 +19,17 @@ export default class UsersRouter {
         router.get('/me', UsersController.getMe);
         router.get('/:id', UsersController.getUserById);
         router.get('/:username', UsersController.getUserProfile);
-        router.get('/:id/profile-picture', ProfilePictureController.getProfilePicture);
-        router.get('/:userId/watched-movies', WatchedMoviesController.getLatestWatchedMovies);
+        router.get(
+            '/:id/profile-picture',
+            ProfilePictureController.getProfilePicture
+        );
+        router.get(
+            '/:userId/watched-movies',
+            WatchedMoviesController.getLatestWatchedMovies
+        );
 
         // PATCH:
-        router.patch(
-            '/:id',
-            checkValidUserIdMiddleware(),
-            UsersController.updateUser
-        );
+        router.patch('/:id', UsersController.updateUser);
 
         // PUT:
         router.put(

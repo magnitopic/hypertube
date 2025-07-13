@@ -40,7 +40,7 @@ export default class MovieController {
 
   static async getAllMovies(req, res) {
     try {
-      const movies = await MovieModel.getAll();
+      const movies = await moviesModel.getAll();
 
       if (movies === null) {
         return res.status(500).json({ message: 'Internal server error' });

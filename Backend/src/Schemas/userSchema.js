@@ -93,6 +93,14 @@ const userSchema = z.object({
                 "Language must be one of: 'en' (English), 'es' (Spanish), or 'de' (German).",
         })
         .optional(),
+    profile_picture_url: z
+        .string({
+            invalid_type_error: 'Invalid profile picture URL.',
+        })
+        .url('Profile picture must be a valid URL.')
+        .max(2048, 'Profile picture URL must be 2048 characters or fewer.')
+        .optional()
+        .nullable(),
 });
 
 export async function validateUser(input) {

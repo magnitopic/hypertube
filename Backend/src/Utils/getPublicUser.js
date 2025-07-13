@@ -1,7 +1,13 @@
 export default async function getPublicUser(user) {
     const { API_HOST, API_PORT, API_VERSION } = process.env;
 
-    const profilePicture = `http://${API_HOST}:${API_PORT}/api/v${API_VERSION}/users/${user.id}/profile-picture`;
+    // If profile picture is a URL, return it directly, otherwise transform to API endpoint
+    let profilePicture;
+    if (user.profile_picture_is_url && user.profile_picture) {
+        profilePicture = user.profile_picture;
+    } else {
+        profilePicture = `http://${API_HOST}:${API_PORT}/api/v${API_VERSION}/users/${user.id}/profile-picture`;
+    }
 
     const publicUser = {
         id: user.id,
