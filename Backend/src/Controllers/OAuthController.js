@@ -20,6 +20,33 @@ export default class OAuthController {
         '42': OAuthController.get42OAuthUserData,
     };
 
+    static async getOAuthToken(req, res) {
+        const { secret, client, provider } = req.body;
+        console.log(secret, client, provider);
+
+        const data = await OAuthController.OAUTH_STRATEGIES[provider](req, res);
+        if (!data) return res;
+        console.log("token en data-getauthtoken: ", data.token);
+        const validatedUser = await validatePartialUser(data);
+        if (!validatedUser.success) {
+            const errorMessage = validatedUser.error.errors[0].message;
+            return res.status(400).json({ msg: errorMessage });
+            }
+        validatedUser.data.active_account = true;
+        validatedUser.data.oauth = true;
+        validatedUser.token = data.token;
+        console.log("token en validateduser: ", validatedUser.token);
+        const isUserRegistered = await OAuthController.loginOAuth(
+            res,
+            validatedUser
+        );
+        if (isUserRegistered || isUserRegistered === null) return res;
+        const res_data = await registerUser(res, validatedUser, true);
+        res_data.token = validatedUser.token;
+        console.log("res_data: ", res_data);
+        return (res_data);
+    }
+
     static async handleOAuth(req, res) {
         const authStatus = await checkAuthStatus(req);
         if (authStatus.isAuthorized)
@@ -78,6 +105,7 @@ export default class OAuthController {
                 username: userInfo.login,
                 first_name: userInfo.first_name,
                 last_name: userInfo.last_name,
+                token: userInfo.token,
             };
 
             return data;
@@ -128,6 +156,7 @@ export default class OAuthController {
                 username: username,
                 first_name: userInfo.given_name,
                 last_name: userInfo.family_name,
+                token: userInfo.token,
             };
 
             return data;
@@ -181,6 +210,7 @@ export default class OAuthController {
                 biography: userInfo.data[0].description
                     ? userInfo.data[0].description
                     : null,
+                token : userInfo.data[0].token,
             };
 
             return data;
@@ -230,6 +260,7 @@ export default class OAuthController {
                 first_name: userInfo.name ? userInfo.name : userInfo.login,
                 last_name: userInfo.name ? userInfo.name : userInfo.login,
                 biography: userInfo.bio ? userInfo.bio : null,
+                token: userInfo.token ? userInfo.token : null,
             };
 
             if (!data.biography) delete data.biography;
@@ -286,7 +317,7 @@ export default class OAuthController {
                 'Client-ID': clientId,
             },
         });
-
+        userInfo.data.token = accessToken;
         return userInfo.data;
     }
 
