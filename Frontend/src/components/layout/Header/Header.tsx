@@ -2,12 +2,41 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useBreakpoints } from "../../../hooks/useBreakpoints";
 import { useAuth } from "../../../context/AuthContext";
+import { usersApi } from "../../../services/api/users";
 
 const Header: React.FC = () => {
-	const { isAuthenticated, user, logout } = useAuth();
+	const { isAuthenticated, user, logout, refreshUserData } = useAuth();
+
 	const navigate = useNavigate();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const { isMobile, isTablet, isDesktop } = useBreakpoints();
+
+	// Check username from backend and update context if different
+	useEffect(() => {
+		const checkAndUpdateUsername = async () => {
+			if (isAuthenticated && user) {
+				try {
+					const response = await usersApi.getMe();
+					const backendUser = response.msg;
+
+					if (backendUser && backendUser.username !== user.username) {
+						console.log(
+							"Username mismatch detected. Updating auth context..."
+						);
+						console.log("Current context username:", user.username);
+						console.log("Backend username:", backendUser.username);
+						await refreshUserData();
+					}
+				} catch (error) {
+					console.error(
+						"Failed to check username from backend:",
+						error
+					);
+				}
+			}
+		};
+		checkAndUpdateUsername();
+	}, [isAuthenticated, user, refreshUserData]);
 
 	// Reset menu state when screen size changes
 	useEffect(() => {

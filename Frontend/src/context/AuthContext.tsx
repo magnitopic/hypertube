@@ -6,6 +6,7 @@ import {
 	RegisterData,
 	AuthResponse,
 } from "../services/api/auth";
+import { usersApi } from "../services/api/users";
 
 interface AuthContextType {
 	isAuthenticated: boolean;
@@ -20,6 +21,7 @@ interface AuthContextType {
 		token: string,
 		new_password: string
 	) => Promise<AuthResponse>;
+	refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -126,6 +128,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		return await authApi.resetPassword(token, new_password);
 	};
 
+	const refreshUserData = async (): Promise<void> => {
+		try {
+			// First check if user is still authenticated
+			const { success } = await authApi.checkAuth();
+			if (success) {
+				// Then get the updated user data from the users API
+				const response = await usersApi.getMe();
+				const userData = response.msg;
+				if (userData) {
+					// Update user data with the fresh info from getMe
+					setUser({
+						id: userData.id || user?.id || "",
+						username: userData.username,
+						oauth: user?.oauth || false,
+						iat: user?.iat || 0,
+						exp: user?.exp || 0,
+					});
+					setIsAuthenticated(true);
+				}
+			} else {
+				setUser(null);
+				setIsAuthenticated(false);
+			}
+		} catch (error) {
+			console.error("Failed to refresh user data:", error);
+		}
+	};
+
 	return (
 		<AuthContext.Provider
 			value={{
@@ -138,6 +168,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				oauth,
 				confirmEmail,
 				resetPassword,
+				refreshUserData,
 			}}
 		>
 			{children}
