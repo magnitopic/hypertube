@@ -102,7 +102,7 @@ export default class UsersController {
             if (input.email)
                 return res.status(403).json({ msg: StatusMessage.CANNOT_CHANGE_EMAIL });
             if (input.username)
-                return res.status(403).json({ msg: StatusMessage.CANNOT_CHANGE_USERNAME });
+                return res.status(403).json({ msg: StatusMessage.CANNOT_CHANGE_EMAIL_OAUTH });
         }
 
         let user = null;

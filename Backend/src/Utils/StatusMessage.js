@@ -45,6 +45,8 @@ export default class StatusMessage {
         'Your account is linked to OAUTH. Please manage your password on their site.';
     static CANNOT_CHANGE_EMAIL =
         'Your account is linked to OAUTH. Please manage your email on their site.';
+    static CANNOT_CHANGE_EMAIL_OAUTH =
+        'Your account is linked to OAUTH. Please manage your username on their site.';
     static CANNOT_LOGIN_WITH_PASS =
         'Your account is linked to OAUTH. Please login with your OAUTH account.';
     static CANNOT_EDIT_OTHER_PROFILE =
