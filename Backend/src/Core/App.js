@@ -5,9 +5,6 @@ import cookieParser from 'cookie-parser';
 import { createServer } from 'http';
 import path from 'path';
 
-// Local Imports:
-import SocketHandler from '../Sockets/SocketHandler.js'; // TODO: Remove if not used by the end of the project
-
 // Launch cron script
 import '../../scripts/cron.js';
 
@@ -29,7 +26,6 @@ export default class App {
     constructor() {
         this.app = express();
         this.server = createServer(this.app);
-        //this.socketHandler = SocketHandler.getInstance(this.server); // TODO: Remove if not used by the end of the project
         this.HOST = process.env.API_HOST ?? 'localhost';
         this.PORT = process.env.API_PORT ?? 3001;
         this.API_VERSION = process.env.API_VERSION;
@@ -41,7 +37,6 @@ export default class App {
             `${this.API_PREFIX}/auth/confirm`,
             `${this.API_PREFIX}/auth/password/reset`,
             `${this.API_PREFIX}/auth/oauth/*`,
-            //`${this.API_PREFIX}/movies/*/*`, // TODO: Remove after testing
         ];
 
         this.#setupMiddleware();
@@ -68,7 +63,6 @@ export default class App {
         this.app.use(invalidJSONMiddleware());
         this.app.use(captureResponseDataMiddleware);
 
-        // TODO
         const MOVIES_PATH = process.env.MOVIES_PATH || './downloads/movies';
         this.app.use('/movies', express.static(path.resolve(MOVIES_PATH)));
     }

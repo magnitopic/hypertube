@@ -20,33 +20,6 @@ export default class OAuthController {
         '42': OAuthController.get42OAuthUserData,
     };
 
-    static async getOAuthToken(req, res) {
-        const { secret, client, provider } = req.body;
-        console.log(secret, client, provider);
-
-        const data = await OAuthController.OAUTH_STRATEGIES[provider](req, res);
-        if (!data) return res;
-        console.log("token en data-getauthtoken: ", data.token);
-        const validatedUser = await validatePartialUser(data);
-        if (!validatedUser.success) {
-            const errorMessage = validatedUser.error.errors[0].message;
-            return res.status(400).json({ msg: errorMessage });
-            }
-        validatedUser.data.active_account = true;
-        validatedUser.data.oauth = true;
-        validatedUser.token = data.token;
-        console.log("token en validateduser: ", validatedUser.token);
-        const isUserRegistered = await OAuthController.loginOAuth(
-            res,
-            validatedUser
-        );
-        if (isUserRegistered || isUserRegistered === null) return res;
-        const res_data = await registerUser(res, validatedUser, true);
-        res_data.token = validatedUser.token;
-        console.log("res_data: ", res_data);
-        return (res_data);
-    }
-
     static async handleOAuth(req, res) {
         const authStatus = await checkAuthStatus(req);
         if (authStatus.isAuthorized)
@@ -105,7 +78,6 @@ export default class OAuthController {
                 username: userInfo.login,
                 first_name: userInfo.first_name,
                 last_name: userInfo.last_name,
-                token: userInfo.token,
             };
 
             return data;
@@ -156,7 +128,6 @@ export default class OAuthController {
                 username: username,
                 first_name: userInfo.given_name,
                 last_name: userInfo.family_name,
-                token: userInfo.token,
             };
 
             return data;
@@ -210,7 +181,6 @@ export default class OAuthController {
                 biography: userInfo.data[0].description
                     ? userInfo.data[0].description
                     : null,
-                token : userInfo.data[0].token,
             };
 
             return data;
@@ -260,7 +230,6 @@ export default class OAuthController {
                 first_name: userInfo.name ? userInfo.name : userInfo.login,
                 last_name: userInfo.name ? userInfo.name : userInfo.login,
                 biography: userInfo.bio ? userInfo.bio : null,
-                token: userInfo.token ? userInfo.token : null,
             };
 
             if (!data.biography) delete data.biography;
@@ -317,7 +286,6 @@ export default class OAuthController {
                 'Client-ID': clientId,
             },
         });
-        userInfo.data.token = accessToken;
         return userInfo.data;
     }
 
@@ -341,5 +309,79 @@ export default class OAuthController {
         }
 
         return false;
+    }
+
+    static async getOAuthToken(req, res) {
+        const { client, secret, provider, code, redirect_uri } = req.body;
+
+        let tokenEndpoint = "";
+        let params = {};
+
+        switch (provider) {
+            case "twitch":
+            tokenEndpoint = process.env.TOKEN_ENDPOINT_TWITCH;
+            params = {
+                client_id: client,
+                client_secret: secret,
+                grant_type: "client_credentials",
+            };
+            break;
+
+            case "42":
+            tokenEndpoint = process.env.TOKEN_ENDPOINT_42;
+            params = {
+                client_id: client,
+                client_secret: secret,
+                grant_type: "client_credentials",
+            };
+            break;
+
+            case "google":
+            if (!code || !redirect_uri) {
+                return res.status(400).json({ error: "Google requires code and redirect_uri" });
+            }
+            tokenEndpoint = process.env.TOKEN_ENDPOINT_GOOGLE;
+            params = {
+                client_id: client,
+                client_secret: secret,
+                code: code,
+                grant_type: "authorization_code",
+                redirect_uri: redirect_uri,
+            };
+            break;
+
+            case "github":
+            if (!code || !redirect_uri) {
+                return res.status(400).json({ error: "GitHub requires code and redirect_uri" });
+            }
+            tokenEndpoint = process.env.TOKEN_ENDPOINT_GITHUB;
+            params = {
+                client_id: client,
+                client_secret: secret,
+                code: code,
+                redirect_uri: redirect_uri,
+            };
+            break;
+
+            default:
+            return res.status(400).json({ error: `Unsupported provider: ${provider}` });
+        }
+
+        try {
+            const headers = provider === "github"
+            ? { Accept: "application/json" }
+            : { "Content-Type": "application/x-www-form-urlencoded" };
+
+            const response = await axios.post(
+                tokenEndpoint,
+                new URLSearchParams(params),
+                { headers }
+            );
+
+            return res.status(200).json(response.data);
+        } catch (error) {
+            console.error(error.response?.data || error.message);
+            return res.status(500).json({ error: "Failed to get token", details: error.response?.data });
+        }
     }
 }

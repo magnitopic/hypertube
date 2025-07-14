@@ -187,9 +187,6 @@ export default class MovieController {
                         .save(mp4LocalPath);
                 }
 
-                // Wait until the mp4 local file has enough bytes to serve this chunk
-                //await waitForLocalFile(mp4LocalPath, safeEnd + 1, 10000); TODO: delete?
-
                 // Stream from mp4 local file
                 const stream = fs.createReadStream(mp4LocalPath, {
                     start,
