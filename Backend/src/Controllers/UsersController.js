@@ -91,6 +91,20 @@ export default class UsersController {
         const { id } = req.params;
         const { input, inputHasNoContent } = isValidData;
 
+        // prevent oauth users from changing email or username
+        const currentUser = await userModel.getById({ id });
+        if (!currentUser)
+            return res.status(500).json({ msg: StatusMessage.INTERNAL_SERVER_ERROR });
+        if (currentUser.length === 0)
+            return res.status(404).json({ msg: StatusMessage.USER_NOT_FOUND });
+
+        if (currentUser.oauth) {
+            if (input.email)
+                return res.status(403).json({ msg: StatusMessage.CANNOT_CHANGE_EMAIL });
+            if (input.username)
+                return res.status(403).json({ msg: StatusMessage.CANNOT_CHANGE_USERNAME });
+        }
+
         let user = null;
         if (!inputHasNoContent) {
             if (input.password) {
@@ -139,6 +153,13 @@ export default class UsersController {
                 res,
                 403,
                 StatusMessage.CANNOT_CHANGE_EMAIL
+            );
+
+        if (input.username && req.session.user.oauth)
+            return returnErrorStatus(
+                res,
+                403,
+                StatusMessage.CANNOT_CHANGE_USERNAME
             );
 
         const { email, username } = input;
