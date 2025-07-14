@@ -17,7 +17,6 @@ class MoviesModel extends Model {
         const orderType = getOrderType(userQuery.orderType);
 
         const result = getSearchValues(userQuery);
-        console.log('TEST:', result);
         const searchQueries = result.searchQueries;
         let values = result.values;
         const fields = [
@@ -50,7 +49,6 @@ class MoviesModel extends Model {
     }
 
     async isDuplicatedMovie(tmdbId) {
-        console.log();
         const query = {
             text: `SELECT * FROM ${this.table} WHERE tmdb_id = $1;`,
             values: [tmdbId],

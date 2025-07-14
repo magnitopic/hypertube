@@ -30,12 +30,9 @@ const WatchedMoviesSection: React.FC<WatchedMoviesSectionProps> = ({
 			try {
 				setLoading(true);
 				setError(null);
-				console.log('Fetching watched movies for user:', userId);
 				const response = await usersApi.getLatestWatchedMovies(userId, 5);
-				console.log('API response:', response);
 				// The API returns data in the 'msg' property
 				const movies = response.msg || [];
-				console.log('Movies data:', movies);
 				setWatchedMovies(Array.isArray(movies) ? movies : []);
 			} catch (err: any) {
 				console.error("Error fetching watched movies:", err);

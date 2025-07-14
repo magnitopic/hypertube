@@ -164,7 +164,6 @@ const index: React.FC = () => {
 				credentials: "include",
 				headers: { "Content-Type": "application/json" },
 			});
-			console.log("Movie marked as watched");
 		} catch (err) {
 			console.error("Error setting movie as watched: ", err);
 		}

@@ -20,11 +20,6 @@ const Header: React.FC = () => {
 					const backendUser = response.msg;
 
 					if (backendUser && backendUser.username !== user.username) {
-						console.log(
-							"Username mismatch detected. Updating auth context..."
-						);
-						console.log("Current context username:", user.username);
-						console.log("Backend username:", backendUser.username);
 						await refreshUserData();
 					}
 				} catch (error) {
