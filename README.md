@@ -1,10 +1,95 @@
-# hypertube
+# Hypertube 📺
 
-Video streaming webpage for torrents
+A full-stack torrent streaming website that allows users to discover, watch, and engage with movies. Built with modern web technologies leveraging real-time capabilities, OAuth authentication, and intelligent media processing.
+
+## Features 🌟
+
+### 🎥 **Streaming & Media Processing**
+
+-   **Real-time torrent streaming** with custom TorrentClient implementation
+-   **Automatic video conversion** to MP4 using FFmpeg for browser compatibility
+-   **Progressive download** with range requests for seamless playback
+-   **Multi-language subtitle support** (SRT, ASS, VTT) with automatic conversion
+-   **Intelligent file detection** prioritizing MP4 format for optimal streaming
+
+### 🔐 **Authentication & Security**
+
+-   **Multi-provider OAuth integration** (Google, GitHub, Twitch, 42)
+-   **JWT-based authentication** with access and refresh tokens
+-   **Email confirmation** system with secure token validation
+-   **Password reset** functionality with time-limited tokens
+-   **Session management** with httpOnly cookies and CSRF protection
+
+### 💬 **Social Features**
+
+-   **Movie commenting** system
+-   **User profiles** with customizable avatars and bios
+-   **Watch history tracking** on your movie library
+-   **Community interaction** through comments and likes
+
+### 🎯 **Smart Movie Discovery**
+
+-   **Advanced search** with filters (genre, year, rating, popularity)
+-   **Automatic metadata fetching** from TMDB API
+-   **Genre-based categorization**
+-   **Pagination** for efficient content loading
+-   **Random movie button** for surprise selections
+
+### 🛠️ **Infrastructure & DevOps**
+
+-   **Containerized deployment** with Docker Compose
+-   **Automated movie cleanup** with cron jobs (removes old downloads)
+-   **Database migrations** and fixtures
+-   **Development and production** environments
+
+## Tech Stack 🚀
+
+### **Frontend**
+
+-   **React 18** with TypeScript
+-   **Vite** for fast development and building
+-   **Tailwind CSS** for modern, responsive styling
+-   **React Router DOM** for client-side routing
+
+### **Backend**
+
+-   **Node.js** with Express.js
+-   **PostgreSQL** for data storage
+-   **FFmpeg** for video/subtitle processing
+-   **Custom TorrentClient** for streaming implementation
+
+Each service of the project runs in it's own Docker container with docker-compose in three isolated containers:
+
+-   **NodeJS** (API and backend) ⚙️
+-   **Postgres** (database) 🗄️
+-   **React - Vite** (frontend) 🌐
+
+## **Custom Torrent Client**
+
+The application features a sophisticated torrent streaming system that:
+
+-   Downloads and parses torrent files using bencode
+-   Utilizes web seeds for HTTP-based streaming
+-   Implements progressive downloading with range requests
+-   Converts different video formats to MP4 on-the-fly
+-   Manages concurrent downloads and streaming efficiently
+
+# Team work 💪
+
+This project was a team effort. You can checkout the team members here:
+
+-   **Alejandro Díaz Ufano Pérez**
+    -   [Github](https://github.com/adiaz-uf)
+    -   [LinkedIn](https://www.linkedin.com/in/jose-luis-utrera-5860a9297/)
+    -   [42 intra](https://profile.intra.42.fr/users/adiaz-uf)
+-   **Alejandro Aparicio**
+    -   [Github](https://github.com/magnitopic)
+    -   [LinkedIn](https://www.linkedin.com/in/magnitopic/)
+    -   [42 intra](https://profile.intra.42.fr/users/alaparic)
 
 # API
 
-The REST API for this project allows users to interact with the application using HTTP requests. It allows for all the same operations that could be performed through the web interface, such as managing user profiles, gathering movie information, and comment management as well as BONUS endpoints.
+The REST API for this project allows users to interact with the application using HTTP requests. It enables all the same operations as the web interface, such as managing user profiles, gathering movie information, and comment management as well as BONUS endpoints.
 
 > _NOTE:_ All endpoints follow the base route of `/api/v1/`
 
