@@ -193,17 +193,25 @@ toggles like status for a movie
 
 _watching movie with subtitles_
 
+---
+
 <img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-36-33 Hypertube" src="https://github.com/user-attachments/assets/3d6068e0-4fc5-4e2f-bbcc-7f21ce40287b" />
 
 _comments and movies information_
+
+---
 
 <img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-40-09 Hypertube" src="https://github.com/user-attachments/assets/7e74acdf-1813-4174-8b9d-069ceb1ca8c1" />
 
 _user profile_
 
+---
+
 <img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-37-18 Hypertube" src="https://github.com/user-attachments/assets/5a80ce71-d9fa-49b2-b0b7-f419a0b5538c" />
 
 _movie library_
+
+---
 
 <img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-37-50 Hypertube" src="https://github.com/user-attachments/assets/e5f5f11b-a09a-44d4-afd1-9e3dd8d540d6" />
 
