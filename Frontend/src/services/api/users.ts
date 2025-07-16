@@ -7,7 +7,7 @@ export const usersApi = {
 	},
 
 	getPublicProfile: async (username: string) => {
-		const response = await apiRequest(`users/${username}`);
+		const response = await apiRequest(`users/profile/${username}`);
 		return response;
 	},
 
