@@ -2,6 +2,8 @@
 
 A full-stack torrent streaming website that allows users to discover, watch, and engage with movies. Built with modern web technologies leveraging real-time capabilities, OAuth authentication, and intelligent media processing.
 
+<img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-37-18 Hypertube" src="https://github.com/user-attachments/assets/44cfea95-9fb4-46d9-8066-a76834dd5cf4" />
+
 ## Features 🌟
 
 ### 🎥 **Streaming & Media Processing**
@@ -80,12 +82,31 @@ This project was a team effort. You can checkout the team members here:
 
 -   **Alejandro Díaz Ufano Pérez**
     -   [Github](https://github.com/adiaz-uf)
-    -   [LinkedIn](https://www.linkedin.com/in/jose-luis-utrera-5860a9297/)
+    -   [LinkedIn](https://www.linkedin.com/in/alejandro-d%C3%ADaz-35a996303/)
     -   [42 intra](https://profile.intra.42.fr/users/adiaz-uf)
 -   **Alejandro Aparicio**
     -   [Github](https://github.com/magnitopic)
     -   [LinkedIn](https://www.linkedin.com/in/magnitopic/)
     -   [42 intra](https://profile.intra.42.fr/users/alaparic)
+
+# Run project
+
+Using docker-compose you can run the project with the following setup:
+
+```bash
+git clone https://github.com/magnitopic/hypertube.git
+
+cd hypertube
+
+cp .example.env .env
+
+#Enter values for the variables in the .env file
+vim .env
+
+make
+```
+
+Once the project is running you can access the web page at [localhost:3000](http://localhost:3000) and the API at [localhost:3001/api/v1/](http://localhost:3001/api/v1/).
 
 # API
 
@@ -165,3 +186,25 @@ marks movie as watched or updates watch progress
 
 ![POST](https://img.shields.io/badge/POST-orange) `/movies/:id/like`  
 toggles like status for a movie
+
+# Project Gallery
+
+<img width="3840" height="2160" alt="hypertube_subtitles" src="https://github.com/user-attachments/assets/0f951d34-73ba-4ad6-a6a1-ccc85b199078" />
+
+_watching movie with subtitles_
+
+<img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-36-33 Hypertube" src="https://github.com/user-attachments/assets/3d6068e0-4fc5-4e2f-bbcc-7f21ce40287b" />
+
+_comments and movies information_
+
+<img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-40-09 Hypertube" src="https://github.com/user-attachments/assets/7e74acdf-1813-4174-8b9d-069ceb1ca8c1" />
+
+_user profile_
+
+<img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-37-18 Hypertube" src="https://github.com/user-attachments/assets/5a80ce71-d9fa-49b2-b0b7-f419a0b5538c" />
+
+_movie library_
+
+<img width="1920" height="1080" alt="Screenshot 2025-07-16 at 19-37-50 Hypertube" src="https://github.com/user-attachments/assets/e5f5f11b-a09a-44d4-afd1-9e3dd8d540d6" />
+
+_library search and sorting_
